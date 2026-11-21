@@ -1,61 +1,132 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# E-Fatwa (Fatwa Stop Centre)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A centralised web application for searching and referring to fatwas (Islamic rulings) issued by federal and state religious authorities across Malaysia, together with directories of religious authorities, certified preachers and mosques.
 
-## About Laravel
+Built as my Final Year Project (FYP) at Universiti Tenaga Nasional (UNITEN), 2025.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Why
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Fatwas in Malaysia are published separately by each state and federal religious authority, so finding a ruling means searching many different websites. E-Fatwa brings them into a single, searchable repository and adds related information (who issued it, certified preachers, nearby mosques) in one place.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Features
 
-## Learning Laravel
+| Feature | Description |
+|---|---|
+| **Dashboard** | Landing page with an overview and navigation to all features (`/`). |
+| **Explore Fatwa** | Browse, view, create, edit and delete fatwas (`/fatwas`). |
+| **Search Fatwa** | Keyword search on title/content, filterable by category and issuing authority (`/search-fatwa`). |
+| **Religious Authorities** | Profiles of federal and state religious bodies, with address and contact info (`/authorities`). |
+| **Certified Preachers** | Directory of certified preachers linked to their authority (`/preachers`). |
+| **Masjid Locator** | Mosque list plus an interactive map using Leaflet + OpenStreetMap (`/mosques`, `/mosques/map`). |
+| **Categories** | Manage fatwa categories (`/categories`). |
+| **Feedback** | Users submit feedback (name, email, phone, message) (`/feedbacks/create`). |
+| **Import API** | `POST /api/fatwas/store` accepts JSON fatwas, used by the scraper. |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Tech stack
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- **Backend:** PHP 8.2+, Laravel 12, Laravel Sanctum
+- **Frontend:** Blade templates, Bootstrap 5.3, custom CSS (`public/css`), Vite + Tailwind 4 toolchain
+- **Maps:** Leaflet 1.9.4 with OpenStreetMap tiles
+- **Database:** MySQL (developed against a database named `eFatwa_db`)
+- **Scraper:** Node.js + Puppeteer + Axios
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Data model
 
-## Laravel Sponsors
+```
+Authority 1───* Fatwa *───1 Category
+    │
+    └──1───* Preacher
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Mosque     (name, location, contact_info, latitude, longitude)
+Feedback   (name, email, phone_number, content)
+```
 
-### Premium Partners
+- **fatwas**: `title`, `content`, `issuing_agency` (→ authorities), `category_id` (→ categories), `date_issued`
+- **authorities**: `authority_name`, `contact_info`, `street`, `city`, `poscode`, `state`
+- **preachers**: `preacher_name`, `certification_details`, `location`, `state`, `authority_id`
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development/)**
-- **[Active Logic](https://activelogic.com)**
+## Getting started
 
-## Contributing
+Requirements: PHP 8.2+, Composer, Node.js 18+, MySQL.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+git clone https://github.com/abdqayyum03/e-fatwa.git
+cd e-fatwa
 
-## Code of Conduct
+composer install
+npm install
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+cp .env.example .env
+php artisan key:generate
+```
 
-## Security Vulnerabilities
+Edit `.env` to point at MySQL:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=eFatwa_db
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Then create the tables, seed the authorities, and run:
+
+```bash
+php artisan migrate --seed
+npm run build        # or: npm run dev
+php artisan serve    # http://localhost:8000
+```
+
+## Importing fatwas (scraper)
+
+`scraper/scrape_fatwas.py` scrapes the fatwa listing from the Federal Territory Mufti's e-Fatwa site and posts each entry to the local import API.
+
+> **Note:** despite the `.py` extension, this file is actually **JavaScript** (Node.js + Puppeteer). Rename it to `scrape_fatwas.mjs` before running.
+
+```bash
+npm install puppeteer axios
+php artisan serve                 # the API must be running on :8000
+node scraper/scrape_fatwas.mjs
+```
+
+The ChromeDriver binaries that were in `scraper/` are not included in the repository. The Puppeteer script does not need them.
+
+## Project structure
+
+```
+app/Http/Controllers/       Fatwa, Authority, Preacher, Mosque, Category, Feedback
+app/Http/Controllers/Api/   FatwaApiController (scraper import endpoint)
+app/Models/                 Eloquent models
+database/migrations/        Schema
+database/seeders/           AuthoritySeeder
+resources/views/            Blade views per feature
+routes/web.php, api.php     Routes
+scraper/                    Fatwa scraper
+docs/                       FYP1 report, SRS, final report
+```
+
+## Documentation
+
+The `docs/` folder contains the original academic documents:
+
+- `FYP1 SW01082193.doc`: FYP1 proposal/report
+- `SRS.docx`: Software Requirements Specification
+- `SW01082193 FINAL REPORT.docx`: Final report
+
+## Known gaps / ideas for future work
+
+Things left unfinished at the end of the FYP, noted for anyone (or me) picking it up again:
+
+- **No authentication.** All create/edit/delete pages and the import API are public. Admin-only access should be added, for example with Laravel Breeze and middleware on write routes.
+- **Preacher search is not routed.** `PreacherController@search` and `preachers/search.blade.php` exist, but there is no route for them.
+- **Schema mismatch.** The import API treats `issuing_agency` as nullable, but the `fatwas` migration declares it `NOT NULL`, so scraped fatwas with no agency can fail to insert.
+- **Duplicate route definitions** in `routes/web.php` (`authorities`, `feedbacks`, `fatwas.index`) should be cleaned up.
+- **Scraped content** stores only the link to the source fatwa, not its full text.
+- **No tests** beyond the Laravel defaults.
+- Search does not yet filter by state or year as described in the SRS.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Personal academic project. No license has been chosen yet; all rights reserved by the author.
