@@ -1,0 +1,324 @@
+:root {
+  --primary-blue: #004080;
+  --accent-blue: #0077b6;
+  --light-blue: #e0f2ff;
+  --hover-blue: #0059b3;
+  --text-dark: #1a1a1a;
+}
+
+/* GENERAL BODY */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f9ff;
+  color: var(--text-dark);
+}
+
+/* ==== DASHBOARD LAYOUT ==== */
+.dashboard-container {
+  display: flex;
+  min-height: 80vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  background-color: var(--primary-blue);
+  color: white;
+  padding: 25px 20px;
+  border-radius: 8px 0 0 8px;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-title {
+  font-size: 20px;
+  font-weight: 600;
+  border-bottom: 2px solid var(--accent-blue);
+  padding-bottom: 10px;
+  margin-bottom: 25px;
+}
+
+.sidebar-links {
+  list-style: none;
+  padding-left: 0;
+}
+
+.sidebar-links li {
+  margin: 16px 0;
+}
+
+.sidebar-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.sidebar-links a:hover {
+  color: var(--accent-blue);
+}
+
+/* MAIN DASHBOARD CONTENT */
+.dashboard-content {
+  flex-grow: 1;
+  padding: 40px;
+  background-color: white;
+  border-radius: 0 8px 8px 0;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+}
+
+/* ==== FATWA SECTION ==== */
+.fatwa-section {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: var(--light-blue);
+}
+
+.fatwa-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-dark);
+}
+
+.fatwa-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.bubble-button {
+  background-color: var(--primary-blue);
+  color: white;
+  padding: 10px 24px;
+  margin: 8px;
+  display: inline-block;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.bubble-button:hover {
+  background-color: var(--hover-blue);
+  transform: scale(1.05);
+}
+
+/* ==== FATWA CARD ==== */
+.fatwa-card {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 15px 0;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+  transition: transform 0.3s ease;
+  height: 100%;
+}
+
+.fatwa-card:hover {
+  transform: translateY(-5px);
+}
+
+.fatwa-card h4 {
+  font-size: 16px;
+  margin-top: 10px;
+  color: var(--primary-blue);
+}
+
+.fatwa-card small {
+  color: #888;
+}
+
+/* ==== FORM STYLING ==== */
+.container form {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.container h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: var(--primary-blue);
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--primary-blue);
+}
+
+.form-control {
+  border: 2px solid #d9eaff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.2);
+}
+
+/* Custom select style (if needed) */
+.custom-select {
+  appearance: none;
+  background-color: white;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='5'%3E%3Cpath fill='black' d='M0 0l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px 5px;
+}
+
+/* Button Styling */
+button.btn-success {
+  background-color: var(--primary-blue);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: white;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 10px;
+}
+
+button.btn-success:hover {
+  background-color: var(--hover-blue);
+  transform: translateY(-2px);
+}
+
+.dashboard-hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.dashboard-hero video,
+.dashboard-hero .bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.dashboard-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.6);
+  width: 100%;
+  height: 100%;
+}
+
+.dashboard-content {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+.dashboard-content h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.dashboard-content p {
+  font-size: 1.25rem;
+  max-width: 700px;
+  margin-bottom: 30px;
+}
+
+.dashboard-content a {
+  background-color: #004080;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.fatwa-section {
+  background: #fff;
+  padding: 60px 20px;
+}
+
+.fatwa-container {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.fatwa-left, .fatwa-right {
+  flex: 1;
+  min-width: 300px;
+}
+
+.fatwa-label {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 12px;
+  color: #444;
+}
+
+.fatwa-title {
+  font-size: 32px;
+  font-weight: bold;
+  margin: 10px 0 20px;
+}
+
+.fatwa-video-wrapper {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.fatwa-video-wrapper video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 36px;
+  color: white;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 10px 16px;
+  border-radius: 50%;
+}
+
+.fatwa-right p {
+  color: #555;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.btn-fatwa {
+  display: inline-block;
+  margin-top: 20px;
+  background-color: #9c0000;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  text-decoration: none;
+}
+.btn-fatwa:hover {
+  background-color: #7e0000;
+}
