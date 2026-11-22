@@ -62,14 +62,25 @@ Done after Phase 4 (not admin pages): OCR for scanned fatwas (Tesseract), the "K
 - [x] **Users:** list accounts and their alert settings, give or remove admin rights, disable accounts.
 - [x] **Agencies:** edit names, logos, addresses and websites in a form instead of the seeder. *(Done; the seeder also fills in each agency's official website.)*
 
+## Phase 6: Tests and cross-state links
+
+**Goal:** a safety net for the growing codebase, then make the "central repository" idea visible on every fatwa page. Start after checking the OCR, decision and category results by hand.
+
+- [ ] **Separate test database:** tests run against their own `eFatwa_test` database (Laravel's test setup wipes the database it uses, so never the real `eFatwa_db`).
+- [ ] **Permission tests:** guests and ordinary users can't open `/admin` or the create/edit/delete pages; disabled accounts can't log in and are signed out; admins can't change their own account and the last active admin can't be removed.
+- [ ] **Parser tests:** `FatwaDecision`, `MalayDate`, the category normaliser and the keyword rules, each against real text samples from every state.
+- [ ] **Importer tests:** re-imports keep existing categories and dates; scanned PDFs fall back to OCR (with the OCR step faked so tests don't need Tesseract).
+- [ ] **Page tests:** the main public and admin pages load in Malay and English.
+- [ ] **Same issue in other states:** each fatwa page lists the closest-matching fatwas from other states (MySQL full-text relevance on title and text), so visitors see how other states ruled without searching.
+- [ ] **Malay validation messages:** `lang/ms/validation.php`, so form errors aren't in English in Malay mode.
+
+Ongoing data work (in the admin area, no code needed): more keyword rules for the 264 uncategorised fatwas, and decision wordings for the 320 fatwas with text but no decision found (mostly Kelantan, Sabah and Perlis; these need a small change to `FatwaDecision`, then `php artisan fatwa:decisions`).
+
 ## Later ideas
 
 Not planned yet; picked up when there is time or budget.
 
-- **Same issue in other states:** each fatwa page lists the closest fatwas from other states (MySQL full-text similarity).
 - **Malaysia map:** clickable map on the home page, coloured by fatwas per state (Leaflet).
-- **Automated tests:** feature tests for routes, admin permissions, search, bookmarks and the decision/date parsers.
-- **Malay validation messages:** `lang/ms/validation.php`, so form errors aren't in English in Malay mode.
 - **Pahang:** retry when its portal is back from maintenance.
 - **Tanya AI:** switch on with an `ANTHROPIC_API_KEY` (code is ready).
 - **AI summaries:** a short plain-language summary per fatwa, generated once and stored (Batch API keeps it to a few dollars).
@@ -90,6 +101,7 @@ Not planned yet; picked up when there is time or budget.
 | 4 | Claude API via the official Anthropic PHP SDK (`anthropic-ai/sdk`) | AI question helper |
 | 4+ | Tesseract OCR (Malay + English data) | Text from scanned fatwas |
 | 5 | None planned | Admin pages are plain Laravel + Blade |
+| 6 | PHPUnit (already installed with Laravel) | Automated tests, against a separate test database |
 
 ## Hosting notes
 
