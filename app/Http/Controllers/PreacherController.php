@@ -2,45 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Preacher;
 use App\Models\Authority;
+use App\Models\Preacher;
 use Illuminate\Http\Request;
 
 class PreacherController extends Controller
 {
-    // Admin or Public Index (can be reused)
-    public function index()
+    // Public directory with search (name/location) and state filter
+    public function index(Request $request)
     {
-        $preachers = Preacher::with('authority')->latest()->paginate(10);
-        return view('preachers.index', compact('preachers'));
+        $filters = $request->only(['name', 'location', 'state']);
+
+        $preachers = Preacher::with('authority')
+            ->when($filters['name'] ?? null, fn ($q, $v) => $q->where('preacher_name', 'like', "%{$v}%"))
+            ->when($filters['location'] ?? null, fn ($q, $v) => $q->where('location', 'like', "%{$v}%"))
+            ->when($filters['state'] ?? null, fn ($q, $v) => $q->where('state', $v))
+            ->orderBy('preacher_name')
+            ->paginate(12)
+            ->withQueryString();
+
+        $states = Preacher::whereNotNull('state')->distinct()->orderBy('state')->pluck('state');
+
+        return view('preachers.index', compact('preachers', 'states', 'filters'));
     }
 
-    // Public search page
+    // Old search URL: same page, same filters
     public function search(Request $request)
     {
-        $query = Preacher::with('authority');
-
-        if ($request->filled('name')) {
-            $query->where('preacher_name', 'like', '%' . $request->name . '%');
-        }
-
-        if ($request->filled('location')) {
-            $query->where('location', 'like', '%' . $request->location . '%');
-        }
-
-        if ($request->filled('state')) {
-            $query->where('state', $request->state);
-        }
-
-        $preachers = $query->latest()->paginate(10);
-        $states = Preacher::select('state')->distinct()->pluck('state');
-
-        return view('preachers.search', compact('preachers', 'states'));
+        return $this->index($request);
     }
 
     public function create()
     {
-        $authorities = Authority::all();
+        $authorities = Authority::orderBy('authority_name')->get();
+
         return view('preachers.create', compact('authorities'));
     }
 
@@ -56,7 +51,7 @@ class PreacherController extends Controller
 
         Preacher::create($validated);
 
-        return redirect()->route('preachers.index')->with('success', 'Preacher created successfully.');
+        return redirect()->route('preachers.index')->with('success', 'Pendakwah berjaya ditambah.');
     }
 
     public function show(Preacher $preacher)
@@ -66,7 +61,8 @@ class PreacherController extends Controller
 
     public function edit(Preacher $preacher)
     {
-        $authorities = Authority::all();
+        $authorities = Authority::orderBy('authority_name')->get();
+
         return view('preachers.edit', compact('preacher', 'authorities'));
     }
 
@@ -82,12 +78,13 @@ class PreacherController extends Controller
 
         $preacher->update($validated);
 
-        return redirect()->route('preachers.index')->with('success', 'Preacher updated successfully.');
+        return redirect()->route('preachers.index')->with('success', 'Pendakwah berjaya dikemas kini.');
     }
 
     public function destroy(Preacher $preacher)
     {
         $preacher->delete();
-        return redirect()->route('preachers.index')->with('success', 'Preacher deleted successfully.');
+
+        return redirect()->route('preachers.index')->with('success', 'Pendakwah berjaya dipadam.');
     }
 }

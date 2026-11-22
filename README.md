@@ -12,23 +12,33 @@ Fatwas in Malaysia are published separately by each state and federal religious 
 
 | Feature | Description |
 |---|---|
-| **Dashboard** | Landing page with an overview and navigation to all features (`/`). |
-| **Explore Fatwa** | Browse, view, create, edit and delete fatwas (`/fatwas`). |
-| **Search Fatwa** | Keyword search on title/content, filterable by category and issuing authority (`/search-fatwa`). |
-| **Religious Authorities** | Profiles of federal and state religious bodies, with address and contact info (`/authorities`). |
+| **Home** | Hero search with live suggestions, animated statistics, fatwa coverage per state, categories and the latest fatwas (`/`). |
+| **Explore & Search Fatwa** | Browse fatwas with full-text search over title and fatwa text, filterable by state, year and category (`/fatwas`). Each fatwa page shows the extracted text, the official PDF and related fatwas. |
+| **Compare States** | Pick an issue or category and see each state's fatwas side by side (`/bandingkan`). |
+| **Religious Authorities** | Profiles of federal and state religious bodies with address, contact info, fatwas per year and their latest fatwas (`/authorities`). |
 | **Certified Preachers** | Directory of certified preachers linked to their authority (`/preachers`). |
-| **Masjid Locator** | Mosque list plus an interactive map using Leaflet + OpenStreetMap (`/mosques`, `/mosques/map`). |
-| **Categories** | Manage fatwa categories (`/categories`). |
-| **Feedback** | Users submit feedback (name, email, phone, message) (`/feedbacks/create`). |
-| **Import API** | `POST /api/fatwas/store` accepts JSON fatwas, used by the scraper. |
+| **Masjid Locator** | Mosque list plus an interactive map (Leaflet + OpenStreetMap): the list and map are linked, and "locate me" sorts mosques by distance (`/mosques`, `/mosques/map`). |
+| **Feedback** | Users submit feedback (name, email, phone, message) (`/feedbacks`). |
+| **Admin login** | Admins log in at `/login` to create, edit and delete fatwas, preachers and mosques. |
+| **Fatwa importer** | `php artisan fatwa:scrape` imports gazetted fatwas from the Federal Territory, Perak and Selangor mufti websites, including the text of their PDFs. |
+| **Import API** | `POST /api/fatwas/store` accepts JSON fatwas from external tools (needs an admin API token). |
+
+### Interface
+
+- Emerald and gold design system (`public/css/theme.css`) on top of Bootstrap 5.3, with a light/dark theme toggle that remembers the visitor's choice.
+- Live search suggestions in the navbar and home page (`/fatwa-suggest`), with keyboard navigation. Press `/` anywhere to jump to search.
+- Reading view for each fatwa: progress bar, text size and font controls, copy link and print.
+- Scroll-in animations and counters (turned off for visitors who prefer reduced motion).
+- All interactions live in one small script, `public/js/app.js`, with no build step.
 
 ## Tech stack
 
 - **Backend:** PHP 8.2+, Laravel 12, Laravel Sanctum
-- **Frontend:** Blade templates, Bootstrap 5.3, custom CSS (`public/css`), Vite + Tailwind 4 toolchain
+- **Frontend:** Blade templates, Bootstrap 5.3 + Bootstrap Icons (via CDN), Google Fonts (Fraunces, Plus Jakarta Sans, Amiri), `public/css/theme.css`, `public/js/app.js`
 - **Maps:** Leaflet 1.9.4 with OpenStreetMap tiles
 - **Database:** MySQL (developed against a database named `eFatwa_db`)
-- **Scraper:** Node.js + Puppeteer + Axios
+- **Search:** MySQL FULLTEXT index on fatwa title + text
+- **Importer:** Laravel Artisan command with one adapter per website (`app/Scrapers`); PDF text via Poppler's `pdftotext`
 
 ## Data model
 
@@ -41,26 +51,26 @@ Mosque     (name, location, contact_info, latitude, longitude)
 Feedback   (name, email, phone_number, content)
 ```
 
-- **fatwas**: `title`, `content`, `issuing_agency` (→ authorities), `category_id` (→ categories), `date_issued`
+- **fatwas**: `title`, `content` (summary), `full_text`, `source_url` (unique), `pdf_url`, `issuing_agency` (→ authorities), `category_id` (→ categories), `date_issued`, `issued_year`, `gazette_no`, `status`
+- A fatwa's **state** comes from its authority.
 - **authorities**: `authority_name`, `contact_info`, `street`, `city`, `poscode`, `state`
 - **preachers**: `preacher_name`, `certification_details`, `location`, `state`, `authority_id`
 
 ## Getting started
 
-Requirements: PHP 8.2+, Composer, Node.js 18+, MySQL.
+Requirements: PHP 8.2+ (with curl, fileinfo, intl, mbstring, openssl, pdo_mysql), Composer, MySQL 8. Importing fatwa text also needs Poppler's `pdftotext` (`scoop install poppler` on Windows).
 
 ```bash
 git clone https://github.com/abdqayyum03/e-fatwa.git
 cd e-fatwa
 
 composer install
-npm install
 
 cp .env.example .env
 php artisan key:generate
 ```
 
-Edit `.env` to point at MySQL:
+Edit `.env` to point at MySQL and set the first admin account:
 
 ```env
 DB_CONNECTION=mysql
@@ -69,41 +79,67 @@ DB_PORT=3306
 DB_DATABASE=eFatwa_db
 DB_USERNAME=root
 DB_PASSWORD=
+
+ADMIN_NAME="Admin"
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=choose-a-strong-password
 ```
 
-Then create the tables, seed the authorities, and run:
+Then create the tables, seed the admin account and authorities, and run:
 
 ```bash
 php artisan migrate --seed
-npm run build        # or: npm run dev
 php artisan serve    # http://localhost:8000
 ```
 
-## Importing fatwas (scraper)
+No front-end build step is needed: Bootstrap, Bootstrap Icons and Leaflet load from CDNs.
 
-`scraper/scrape_fatwas.py` scrapes the fatwa listing from the Federal Territory Mufti's e-Fatwa site and posts each entry to the local import API.
+### Admin access
 
-> **Note:** despite the `.py` extension, this file is actually **JavaScript** (Node.js + Puppeteer). Rename it to `scrape_fatwas.mjs` before running.
+Visitors can browse and search everything without logging in. Creating, editing and deleting fatwas, preachers and mosques needs an admin login: click **Admin** in the navigation bar (or go to `/login`). There is no public registration; admin accounts come from the `ADMIN_*` values in `.env` (re-run `php artisan db:seed --class=AdminUserSeeder` after changing them).
+
+## Importing fatwas
+
+The importer reads each mufti website directly and saves fatwas to the database. It is safe to re-run: fatwas are matched by their source URL and updated instead of duplicated.
 
 ```bash
-npm install puppeteer axios
-php artisan serve                 # the API must be running on :8000
-node scraper/scrape_fatwas.mjs
+php artisan fatwa:scrape                  # all sources: wp, perak, selangor
+php artisan fatwa:scrape selangor         # one source
+php artisan fatwa:scrape --limit=5        # quick test, 5 per source
+php artisan fatwa:scrape --no-text        # skip PDF downloads (fast, no full text)
+php artisan fatwa:scrape --refresh-text   # re-extract text for every fatwa
 ```
 
-The ChromeDriver binaries that were in `scraper/` are not included in the repository. The Puppeteer script does not need them.
+| Source | Website | How it is read | Full text |
+|---|---|---|---|
+| `wp` | efatwa.muftiwp.gov.my | Paged HTML table (title, year, category, status, PDF) | Yes, from PDF |
+| `perak` | mufti.perak.gov.my | Single HTML table of gazetted fatwas | Mostly no: most PDFs are scanned images |
+| `selangor` | muftiselangor.gov.my | WordPress JSON API (gazetted-fatwa category) | Yes, from PDF |
+
+Notes:
+
+- The importer waits about a second between requests so it doesn't overload the government sites. A full run takes 15–20 minutes.
+- PDF text is extracted with `pdftotext`. Set `PDFTOTEXT_PATH` in `.env` if it isn't on your PATH.
+- Some sites send an incomplete TLS certificate chain. The missing intermediate certificates are kept in `resources/certs/` and trusted only by the importer.
+- To add another state, write a class implementing `App\Scrapers\FatwaSource` and register it in `app/Console/Commands/ScrapeFatwas.php`.
+
+The older Node.js/Puppeteer script in `scraper/` (from the FYP) is superseded by this command.
 
 ## Project structure
 
 ```
-app/Http/Controllers/       Fatwa, Authority, Preacher, Mosque, Category, Feedback
-app/Http/Controllers/Api/   FatwaApiController (scraper import endpoint)
+app/Http/Controllers/       Fatwa, Authority, Preacher, Mosque, Feedback
+app/Http/Controllers/Auth/  LoginController (admin login)
+app/Http/Controllers/Api/   FatwaApiController (import endpoint)
+app/Console/Commands/        ScrapeFatwas (fatwa:scrape)
+app/Scrapers/               One adapter per mufti website + FatwaImporter
 app/Models/                 Eloquent models
 database/migrations/        Schema
-database/seeders/           AuthoritySeeder
+database/seeders/           AdminUserSeeder, AuthoritySeeder
 resources/views/            Blade views per feature
 routes/web.php, api.php     Routes
-scraper/                    Fatwa scraper
+resources/certs/            Extra TLS intermediates for the importer
+scraper/                    Original FYP Node.js scraper (superseded)
 docs/                       FYP1 report, SRS, final report
 ```
 
@@ -117,15 +153,18 @@ The `docs/` folder contains the original academic documents:
 
 ## Known gaps / ideas for future work
 
+See [ROADMAP.md](ROADMAP.md) for the full plan of fixes and new features.
+
 Things left unfinished at the end of the FYP, noted for anyone (or me) picking it up again:
 
-- **No authentication.** All create/edit/delete pages and the import API are public. Admin-only access should be added, for example with Laravel Breeze and middleware on write routes.
-- **Preacher search is not routed.** `PreacherController@search` and `preachers/search.blade.php` exist, but there is no route for them.
-- **Schema mismatch.** The import API treats `issuing_agency` as nullable, but the `fatwas` migration declares it `NOT NULL`, so scraped fatwas with no agency can fail to insert.
-- **Duplicate route definitions** in `routes/web.php` (`authorities`, `feedbacks`, `fatwas.index`) should be cleaned up.
-- **Scraped content** stores only the link to the source fatwa, not its full text.
+- **Scanned documents have no text.** Most Perak PDFs and Selangor posts from 2023 and earlier are scanned images, so about 275 of 456 fatwas can only be found by title. OCR (e.g. Tesseract) would fix this.
+- **Only three sources.** Pahang, Negeri Sembilan and other states still need adapters. The national portal (e-fatwa.gov.my / e-SMAF) was unreachable in Nov 2026.
+- **Categories** come only from the Federal Territory site; Perak and Selangor fatwas are uncategorised.
+- **No admin pages yet** for categories, religious authorities or reading submitted feedback (`CategoryController` is an empty stub).
+- **Authority profile columns missing.** The authority page shows `sejarah`, `visi`, `misi`, `objektif` and `org_chart`, but no migration creates them (they existed only in the old WAMP database), so those sections are blank. Add a migration and fill them in.
+- **Original data lost.** The FYP database lived in WampServer and was not exported. Fatwas are re-imported with `fatwa:scrape`, but preachers and mosques start empty and must be added by an admin.
+- **Home page video.** `public/videos/fatwa-hero.mp4` from the FYP is no longer shown on the home page.
 - **No tests** beyond the Laravel defaults.
-- Search does not yet filter by state or year as described in the SRS.
 
 ## License
 

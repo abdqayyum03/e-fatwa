@@ -1,51 +1,18 @@
 @extends('layouts.app')
 
+@section('title', 'Tambah Fatwa')
+
 @section('content')
-<div class="container mt-4">
-    <h2>Add New Fatwa</h2>
+@include('partials.page-hero', ['title' => 'Tambah Fatwa', 'icon' => 'journal-plus', 'crumbs' => ['Fatwa' => route('fatwas.index'), 'Tambah' => null]])
 
-    <form action="{{ route('fatwas.store') }}" method="POST">
+<div class="container-xl page-body">
+    <form action="{{ route('fatwas.store') }}" method="POST" class="surface p-4 p-md-5">
         @csrf
-
-        <div class="mb-3">
-            <label for="title" class="form-label">Fatwa Title</label>
-            <input type="text" name="title" class="form-control" value="{{ old('title') }}" required>
+        @include('fatwas._form')
+        <div class="d-flex justify-content-end gap-2 mt-2">
+            <a href="{{ route('fatwas.index') }}" class="btn btn-ghost">Batal</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Simpan Fatwa</button>
         </div>
-
-        <div class="mb-3">
-            <label for="content" class="form-label">Fatwa Content</label>
-            <textarea name="content" class="form-control" rows="5" required>{{ old('content') }}</textarea>
-        </div>
-
-        <div class="mb-3">
-            <label for="issuing_agency" class="form-label">Issuing Agency</label>
-            <select name="issuing_agency" class="form-control custom-select" required>
-                <option value="">-- Select Authority --</option>
-                @foreach($authorities as $authority)
-                    <option value="{{ $authority->id }}">{{ $authority->authority_name }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label for="category_id" class="form-label">Fatwa Category</label>
-            <select name="category_id" class="form-control custom-select">
-                <option value="">-- Optional --</option>
-                <option value="1">Akidah & Ibadah</option>
-                <option value="2">Muamalat (Kewangan/Perbankan)</option>
-                <option value="3">Sosial & Kekeluargaan</option>
-                <option value="4">Pendidikan & Dakwah</option>
-                <option value="5">Kesihatan & Perubatan</option>
-            </select>
-        </div>
-        
-
-        <div class="mb-3">
-            <label for="date_issued" class="form-label">Date Issued</label>
-            <input type="date" name="date_issued" class="form-control" required>
-        </div>
-
-        <button class="btn btn-success">Save Fatwa</button>
     </form>
 </div>
 @endsection

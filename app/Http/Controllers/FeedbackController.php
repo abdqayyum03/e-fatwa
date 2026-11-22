@@ -9,26 +9,21 @@ class FeedbackController extends Controller
 {
     public function index()
     {
-        $feedbacks = Feedback::latest()->paginate(10);
-        return view('feedbacks.index', compact('feedbacks'));
-    }
-
-    public function create()
-    {
-        return view('feedbacks.create');
+        // Public feedback form (submitted feedback is never shown publicly).
+        return view('feedbacks.index');
     }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email',
-        'phone_number' => 'required|string|max:20',
-        'content' => 'required|string',
-    ]);
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'phone_number' => 'required|string|max:20',
+            'content' => 'required|string|max:2000',
+        ]);
 
-    \App\Models\Feedback::create($request->all());
+        Feedback::create($request->only(['name', 'email', 'phone_number', 'content']));
 
-    return view('feedbacks.thankyou');
-}
+        return view('feedbacks.thankyou');
+    }
 }

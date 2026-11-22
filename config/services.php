@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    // Poppler's pdftotext, used by the fatwa scraper to read PDF text.
+    'pdftotext' => [
+        'path' => env('PDFTOTEXT_PATH', 'pdftotext'),
+    ],
+
 ];

@@ -3,25 +3,32 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Fatwa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Fatwa;
 
+/**
+ * Import endpoint for external tools. The built-in importer is
+ * `php artisan fatwa:scrape`; this API is for anything else.
+ * Sending a fatwa with a source_url that already exists updates it.
+ */
 class FatwaApiController extends Controller
 {
     public function store(Request $request)
     {
-        // Manual validation using Validator to return JSON-friendly errors
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'issuing_agency' => 'nullable|exists:authorities,id', // ✅ nullable
-            'date_issued' => 'nullable|string',                    // ✅ only store year like "2024"
+            'title' => 'required|string|max:500',
+            'content' => 'nullable|string',
+            'source_url' => 'nullable|url|max:500',
+            'pdf_url' => 'nullable|url|max:500',
+            'full_text' => 'nullable|string',
+            'issuing_agency' => 'nullable|exists:authorities,id',
             'category_id' => 'nullable|exists:categories,id',
+            'date_issued' => 'nullable|string|max:50',
+            'gazette_no' => 'nullable|string|max:100',
+            'status' => 'nullable|in:Diwartakan,Tidak Diwartakan',
         ]);
-        
 
-        // If validation fails, return JSON error
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -30,14 +37,16 @@ class FatwaApiController extends Controller
             ], 422);
         }
 
-        // Create the Fatwa
-        $fatwa = Fatwa::create($validator->validated());
+        $data = $validator->validated();
 
-        // Return success response
+        $fatwa = ! empty($data['source_url'])
+            ? Fatwa::updateOrCreate(['source_url' => $data['source_url']], $data)
+            : Fatwa::create($data);
+
         return response()->json([
             'success' => true,
-            'message' => 'Fatwa created successfully.',
+            'message' => $fatwa->wasRecentlyCreated ? 'Fatwa created successfully.' : 'Fatwa updated successfully.',
             'data' => $fatwa,
-        ], 201);
+        ], $fatwa->wasRecentlyCreated ? 201 : 200);
     }
 }

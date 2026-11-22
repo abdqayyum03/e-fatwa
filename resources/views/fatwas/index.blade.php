@@ -1,88 +1,136 @@
 @extends('layouts.app')
 
+@section('title', 'Senarai Fatwa')
+
+@section('hero-actions')
+    <a href="{{ route('fatwas.compare', array_filter(['search' => $filters['search'] ?? null])) }}" class="btn btn-light"><i class="bi bi-columns-gap"></i> Bandingkan negeri</a>
+    @can('admin')
+        <a href="{{ route('fatwas.create') }}" class="btn btn-gold"><i class="bi bi-plus-lg"></i> Tambah</a>
+    @endcan
+@endsection
+
 @section('content')
-<div class="container-fluid py-5 px-5">
-    <a href="{{ url('/') }}" class="btn btn-outline-secondary mb-3">
-        <i class="bi bi-arrow-left-circle"></i> Kembali ke Dashboard
-    </a>
+@include('partials.page-hero', [
+    'title' => 'Senarai Fatwa',
+    'subtitle' => 'Carian teks penuh merentas fatwa daripada semua negeri. Tapis mengikut negeri, tahun dan kategori.',
+    'icon' => 'journal-text',
+    'crumbs' => ['Fatwa' => route('fatwas.index')],
+])
 
-    <h2 class="mb-4 text-center fw-bold">Senarai Fatwa Terkini</h2>
-
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
+<div class="container-xl page-body">
+    {{-- Filters (dropdowns apply immediately) --}}
+    <form method="GET" action="{{ route('fatwas.index') }}" class="surface filter-bar mb-4" data-autosubmit>
+        <div class="row g-2 align-items-center">
+            <div class="col-lg-5">
+                <div class="position-relative">
+                    <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
+                    <input type="search" name="search" value="{{ $filters['search'] ?? '' }}" class="form-control ps-5"
+                           placeholder="Cari dalam tajuk dan teks fatwa..." aria-label="Kata kunci" data-primary-search>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <select name="state" class="form-select" aria-label="Negeri">
+                    <option value="">Semua negeri</option>
+                    @foreach($states as $state)
+                        <option value="{{ $state }}" @selected(($filters['state'] ?? '') === $state)>{{ $state }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <select name="year" class="form-select" aria-label="Tahun">
+                    <option value="">Semua tahun</option>
+                    @foreach($years as $year)
+                        <option value="{{ $year }}" @selected(($filters['year'] ?? '') == $year)>{{ $year }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-8 col-md-4 col-lg-2">
+                <select name="category" class="form-select" aria-label="Kategori">
+                    <option value="">Semua kategori</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}" @selected(($filters['category'] ?? '') == $category->id)>{{ $category->category_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-4 col-md-2 col-lg-1 d-grid">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i><span class="d-lg-none ms-1">Cari</span></button>
+            </div>
         </div>
-    @endif
 
-    <!-- Search and Filter Form -->
-    <form method="GET" action="{{ route('fatwas.index') }}" class="row mb-4 g-2 align-items-center">
-        <div class="col-md-4">
-            <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari berdasarkan tajuk atau kandungan...">
-        </div>
-        <div class="col-md-3">
-            <select name="year" class="form-select" onchange="this.form.submit()">
-                <option value="">-- Pilih Tahun --</option>
-                @foreach($years as $year)
-                    <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
-                        {{ $year }}
-                    </option>
+        @if(array_filter($filters))
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top">
+                <span class="small text-muted">Tapisan:</span>
+                @foreach(array_filter($filters) as $key => $value)
+                    @php
+                        $label = match ($key) {
+                            'category' => optional($categories->firstWhere('id', $value))->category_name,
+                            'agency' => optional($agencies->firstWhere('id', $value))->authority_name,
+                            default => $value,
+                        };
+                    @endphp
+                    <a href="{{ route('fatwas.index', \Illuminate\Support\Arr::except(array_filter($filters), $key)) }}" class="chip chip-light py-1">
+                        {{ $label }} <i class="bi bi-x"></i>
+                    </a>
                 @endforeach
-            </select>
-        </div>
-        <div class="col-md-3">
-            <select name="agency" class="form-select" onchange="this.form.submit()">
-                <option value="">-- Pilih Agensi --</option>
-                @foreach($agencies as $agency)
-                    <option value="{{ $agency->id }}" {{ request('agency') == $agency->id ? 'selected' : '' }}>
-                        {{ $agency->authority_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">
-                <i class="bi bi-search"></i> Cari
-            </button>
-        </div>
+                <a href="{{ route('fatwas.index') }}" class="small ms-1">Kosongkan semua</a>
+            </div>
+        @endif
     </form>
 
-    <!-- Table Section -->
-    <div class="table-responsive shadow-sm rounded">
-        <table class="table table-hover align-middle">
-            <thead class="table-primary">
-                <tr>
-                    <th scope="col">No.</th>
-                    <th scope="col">Tajuk Fatwa</th>
-                    <th scope="col">Tahun Diwartakan</th>
-                    <th scope="col">Agensi</th>
-                    <th scope="col">Butiran</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($fatwas as $index => $fatwa)
-                    <tr>
-                        <td>{{ $fatwas->firstItem() + $index }}</td>
-                        <td>{{ $fatwa->title }}</td>
-                        <td>{{ $fatwa->date_issued }}</td>
-                        <td>{{ $fatwa->authority->authority_name ?? 'N/A' }}</td>
-                        <td>
-                            <a href="{{ route('fatwas.show', $fatwa->id) }}" class="btn btn-sm btn-info text-white">
-                                <i class="bi bi-eye"></i> Lihat
-                            </a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="text-center text-muted">Tiada fatwa dijumpai.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="result-count"><strong class="text-body">{{ number_format($fatwas->total()) }}</strong> fatwa dijumpai</span>
+        @if($fatwas->hasPages())
+            <span class="small text-muted">Halaman {{ $fatwas->currentPage() }} / {{ $fatwas->lastPage() }}</span>
+        @endif
+    </div>
 
-        <!-- Pagination -->
-        <div class="mt-4 d-flex justify-content-center">
-            {{ $fatwas->withQueryString()->links() }}
-        </div>
+    <div class="surface overflow-hidden">
+        @forelse($fatwas as $fatwa)
+            @php
+                $snippet = null;
+                if (! empty($filters['search']) && $fatwa->full_text) {
+                    $pos = mb_stripos($fatwa->full_text, $filters['search']);
+                    if ($pos !== false) {
+                        $raw = mb_substr($fatwa->full_text, max(0, $pos - 90), 240);
+                        $snippet = preg_replace('/(' . preg_quote(e($filters['search']), '/') . ')/iu', '<mark>$1</mark>', e(preg_replace('/\s+/u', ' ', $raw)));
+                    }
+                }
+            @endphp
+            <a href="{{ route('fatwas.show', $fatwa) }}" class="fatwa-item">
+                <div class="year">
+                    <b>{{ $fatwa->issued_year ?? '–' }}</b>
+                    <small>Tahun</small>
+                </div>
+                <div class="flex-grow-1" style="min-width: 0">
+                    <div class="title">{{ $fatwa->title }}</div>
+                    @if($snippet)
+                        <div class="snippet">…{!! $snippet !!}…</div>
+                    @endif
+                    <div class="meta-row">
+                        <x-state-pill :state="$fatwa->authority->state ?? null" />
+                        @if($fatwa->category)<span class="tag"><i class="bi bi-tag"></i> {{ $fatwa->category->category_name }}</span>@endif
+                        @if($fatwa->status === 'Diwartakan')<span class="tag tag-gold"><i class="bi bi-patch-check"></i> Diwartakan</span>@endif
+                        @if($fatwa->gazette_no)<span class="tag">{{ $fatwa->gazette_no }}</span>@endif
+                        @if($fatwa->full_text)
+                            <span class="tag" title="Teks penuh tersedia"><i class="bi bi-file-text"></i> Teks</span>
+                        @elseif($fatwa->pdf_url)
+                            <span class="tag" title="PDF sahaja"><i class="bi bi-file-earmark-pdf"></i> PDF</span>
+                        @endif
+                    </div>
+                </div>
+                <i class="bi bi-chevron-right text-muted align-self-center d-none d-md-block"></i>
+            </a>
+        @empty
+            <div class="empty">
+                <i class="bi bi-search"></i>
+                <p class="mb-2">Tiada fatwa yang sepadan dengan carian anda.</p>
+                <a href="{{ route('fatwas.index') }}" class="btn btn-outline-primary btn-sm">Kosongkan tapisan</a>
+            </div>
+        @endforelse
+    </div>
+
+    <div class="mt-4 d-flex justify-content-center">
+        {{ $fatwas->onEachSide(1)->links() }}
     </div>
 </div>
 @endsection

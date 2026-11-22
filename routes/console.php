@@ -1,8 +1,24 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('fatwa:token {email : Email of an admin user}', function (string $email) {
+    $user = User::where('email', $email)->first();
+
+    if (! $user || ! $user->is_admin) {
+        $this->error("No admin user found with email {$email}.");
+
+        return 1;
+    }
+
+    $token = $user->createToken('scraper')->plainTextToken;
+
+    $this->info('API token created. Put it in scraper/.env as API_TOKEN (it is shown only once):');
+    $this->line($token);
+})->purpose('Create an API token for the fatwa scraper');

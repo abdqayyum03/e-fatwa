@@ -1,80 +1,94 @@
 @extends('layouts.app')
 
+@section('title', 'Senarai Masjid')
+
+@section('hero-actions')
+    <a href="{{ route('mosques.map') }}" class="btn btn-light"><i class="bi bi-map"></i> Lihat peta</a>
+    @can('admin')
+        <a href="{{ route('mosques.create') }}" class="btn btn-gold"><i class="bi bi-plus-lg"></i> Tambah</a>
+    @endcan
+@endsection
+
 @section('content')
-<div class="p-5 rounded shadow-lg text-white position-relative overflow-hidden" style="
-    background: url('{{ asset('images/fatwa-bg.jpg') }}') no-repeat center center;
-    background-size: cover;
-">
-<div class="dashboard py-5" style="background-color: rgba(248, 249, 250, 0.85);">
-    <div class="container">
+@include('partials.page-hero', [
+    'title' => 'Senarai Masjid',
+    'subtitle' => 'Cari masjid mengikut nama atau lokasi.',
+    'icon' => 'building',
+    'crumbs' => ['Masjid' => route('mosques.index')],
+])
 
-        <!-- Return to Dashboard -->
-        <div class="mb-4 text-end">
-            <a href="{{ url('/') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
-            </a>
-        </div>
-
-        <h2 class="mb-4 text-center fw-bold">Senarai Masjid di Malaysia</h2>
-
-        <!-- Filter Section -->
-        <form method="GET" action="{{ route('mosques.index') }}" class="row mb-4 g-2 justify-content-center">
-            <div class="col-md-4">
-                <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari nama atau alamat masjid...">
+<div class="container-xl page-body">
+    <form method="GET" action="{{ route('mosques.index') }}" class="surface filter-bar mb-4" data-autosubmit>
+        <div class="row g-2">
+            <div class="col-md-7">
+                <div class="position-relative">
+                    <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
+                    <input type="search" name="search" value="{{ request('search') }}" class="form-control ps-5" placeholder="Nama atau lokasi masjid" aria-label="Cari masjid" data-primary-search>
+                </div>
             </div>
-            <div class="col-md-3">
-                <select name="location" class="form-select" onchange="this.form.submit()">
-                    <option value="">-- Tapis Mengikut Negeri --</option>
+            <div class="col-8 col-md-4">
+                <select name="location" class="form-select" aria-label="Lokasi">
+                    <option value="">Semua lokasi</option>
                     @foreach($locations as $loc)
-                        <option value="{{ $loc }}" {{ request('location') == $loc ? 'selected' : '' }}>{{ $loc }}</option>
+                        <option value="{{ $loc }}" @selected(request('location') == $loc)>{{ $loc }}</option>
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-search"></i> Cari
-                </button>
+            <div class="col-4 col-md-1 d-grid">
+                <button type="submit" class="btn btn-primary" aria-label="Cari"><i class="bi bi-search"></i></button>
             </div>
-        </form>
+        </div>
+    </form>
 
-        <!-- Mosque Cards -->
-        <div class="row g-4">
-            @forelse($mosques as $mosque)
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm hover-shadow transition">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold">{{ $mosque->name }}</h5>
-                            <p class="card-text text-muted mb-1"><strong>Lokasi:</strong> {{ $mosque->location }}</p>
-                            <p class="card-text text-muted mb-1"><strong>Alamat:</strong> {{ $mosque->address }}</p>
-                            <p class="card-text text-muted"><strong>Telefon:</strong> {{ $mosque->contact_info }}</p>
-                        </div>
-                        <div class="card-footer bg-transparent border-0">
-                            <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($mosque->address) }}" target="_blank" class="btn btn-outline-primary w-100">
-                                Lihat di Google Maps
-                            </a>
+    <div class="row g-4">
+        @forelse($mosques as $mosque)
+            @php
+                $mapQuery = ($mosque->latitude && $mosque->longitude)
+                    ? $mosque->latitude . ',' . $mosque->longitude
+                    : $mosque->name . ' ' . $mosque->location;
+            @endphp
+            <div class="col-md-6 col-lg-4">
+                <div class="surface lift p-4 h-100 d-flex flex-column reveal" style="--d: {{ ($loop->index % 6) * .05 }}s">
+                    <div class="d-flex gap-3 align-items-start mb-3">
+                        <div class="ico ico-emerald rounded-3 d-grid flex-shrink-0" style="width: 46px; height: 46px; place-items: center; font-size: 1.2rem"><i class="bi bi-moon-stars"></i></div>
+                        <div style="min-width: 0">
+                            <h2 class="h6 fw-bold mb-1" style="font-family: var(--ef-font)">{{ $mosque->name }}</h2>
+                            <div class="small text-muted"><i class="bi bi-geo-alt"></i> {{ $mosque->location }}</div>
+                            @if($mosque->contact_info)
+                                <div class="small text-muted"><i class="bi bi-telephone"></i> {{ $mosque->contact_info }}</div>
+                            @endif
                         </div>
                     </div>
+                    <div class="mt-auto d-flex gap-2">
+                        <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($mapQuery) }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm flex-fill">
+                            <i class="bi bi-sign-turn-right"></i> Arah
+                        </a>
+                        @can('admin')
+                            <a href="{{ route('mosques.edit', $mosque) }}" class="btn btn-ghost btn-sm" aria-label="Sunting"><i class="bi bi-pencil"></i></a>
+                            <form action="{{ route('mosques.destroy', $mosque) }}" method="POST" onsubmit="return confirm('Padam masjid ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-ghost btn-sm text-danger" aria-label="Padam"><i class="bi bi-trash"></i></button>
+                            </form>
+                        @endcan
+                    </div>
                 </div>
-            @empty
-                <div class="col-12 text-center text-muted">
-                    Tiada masjid dijumpai.
+            </div>
+        @empty
+            <div class="col-12">
+                <div class="surface empty">
+                    <i class="bi bi-building"></i>
+                    @if(request()->hasAny(['search', 'location']) && (request('search') || request('location')))
+                        Tiada masjid sepadan dengan carian. <a href="{{ route('mosques.index') }}">Kosongkan tapisan</a>
+                    @else
+                        Belum ada masjid dalam senarai.
+                        @can('admin') <div class="mt-3"><a href="{{ route('mosques.create') }}" class="btn btn-primary btn-sm">Tambah masjid pertama</a></div> @endcan
+                    @endif
                 </div>
-            @endforelse
-        </div>
-
-        <!-- Pagination -->
-        <div class="mt-4 d-flex justify-content-center">
-            {{ $mosques->withQueryString()->links() }}
-        </div>
+            </div>
+        @endforelse
     </div>
-</div>
-</div>
 
-<style>
-.hover-shadow:hover {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    transform: translateY(-3px);
-    transition: 0.3s ease;
-}
-</style>
+    <div class="mt-4 d-flex justify-content-center">{{ $mosques->withQueryString()->links() }}</div>
+</div>
 @endsection

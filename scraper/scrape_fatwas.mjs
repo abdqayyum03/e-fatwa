@@ -2,6 +2,14 @@ import puppeteer from "puppeteer";
 import axios from "axios";
 
 const BASE_URL = "https://efatwa.muftiwp.gov.my/";
+const API_URL = process.env.API_URL || "http://localhost:8000/api/fatwas/store";
+const API_TOKEN = process.env.API_TOKEN;
+
+if (!API_TOKEN) {
+  console.error("❌ API_TOKEN is not set. Copy scraper/.env.example to scraper/.env and add a token");
+  console.error("   (create one with: php artisan fatwa:token <admin email>).");
+  process.exit(1);
+}
 
 const getFatwas = async () => {
   const browser = await puppeteer.launch({
@@ -39,8 +47,9 @@ const getFatwas = async () => {
 
     for (const fatwa of fatwas) {
       try {
-        const response = await axios.post("http://localhost:8000/api/fatwas/store", fatwa, {
+        await axios.post(API_URL, fatwa, {
           headers: {
+            Authorization: `Bearer ${API_TOKEN}`,
             Accept: "application/json",
             "Content-Type": "application/json",
           },

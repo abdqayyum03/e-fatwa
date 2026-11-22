@@ -25,3 +25,10 @@ yarn-error.log
 # ChromeDriver binaries (re-download from https://googlechromelabs.github.io/chrome-for-testing/)
 /scraper/chromedriver.exe
 /scraper/chromedriver-win64/
+
+# Scraper secrets and packages
+/scraper/.env
+/scraper/node_modules
+
+# Local Claude Code preview config (machine-specific paths)
+/.claude/

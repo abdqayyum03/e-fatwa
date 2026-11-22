@@ -1,48 +1,19 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="container mt-4">
-    <h2>Edit Fatwa</h2>
+@section('title', 'Sunting Fatwa')
 
-    <form action="{{ route('fatwas.update', $fatwa->id) }}" method="POST">
+@section('content')
+@include('partials.page-hero', ['title' => 'Sunting Fatwa', 'icon' => 'pencil-square', 'crumbs' => ['Fatwa' => route('fatwas.index'), $fatwa->title => route('fatwas.show', $fatwa), 'Sunting' => null]])
+
+<div class="container-xl page-body">
+    <form action="{{ route('fatwas.update', $fatwa) }}" method="POST" class="surface p-4 p-md-5">
         @csrf
         @method('PUT')
-
-        <div class="mb-3">
-            <label for="title" class="form-label">Fatwa Title</label>
-            <input type="text" name="title" class="form-control" value="{{ $fatwa->title }}" required>
+        @include('fatwas._form')
+        <div class="d-flex justify-content-end gap-2 mt-2">
+            <a href="{{ route('fatwas.show', $fatwa) }}" class="btn btn-ghost">Batal</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Kemas Kini Fatwa</button>
         </div>
-
-        <div class="mb-3">
-            <label for="content" class="form-label">Fatwa Content</label>
-            <textarea name="content" class="form-control" rows="5" required>{{ $fatwa->content }}</textarea>
-        </div>
-
-        <div class="mb-3">
-            <label for="issuing_agency" class="form-label">Issuing Agency</label>
-            <select name="issuing_agency" class="form-control" required>
-                @foreach($authorities as $authority)
-                    <option value="{{ $authority->id }}" {{ $fatwa->issuing_agency == $authority->id ? 'selected' : '' }}>{{ $authority->authority_name }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label for="category_id" class="form-label">Fatwa Category</label>
-            <select name="category_id" class="form-control">
-                <option value="">-- Optional --</option>
-                @foreach($categories as $cat)
-                    <option value="{{ $cat->id }}" {{ $fatwa->category_id == $cat->id ? 'selected' : '' }}>{{ $cat->category_name }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label for="date_issued" class="form-label">Date Issued</label>
-            <input type="date" name="date_issued" class="form-control" value="{{ $fatwa->date_issued }}" required>
-        </div>
-
-        <button class="btn btn-primary">Update Fatwa</button>
     </form>
 </div>
 @endsection
