@@ -59,6 +59,8 @@ class AuthoritySeeder extends Seeder
             ['authority_name' => 'Mufti Melaka', 'logo' => 'mufti-melaka.png', 'city' => 'Melaka', 'state' => 'Melaka'],
             ['authority_name' => 'Mufti Kelantan', 'city' => 'Kota Bharu', 'state' => 'Kelantan'],
             ['authority_name' => 'Mufti Johor', 'city' => 'Johor Bahru', 'state' => 'Johor'],
+            ['authority_name' => 'Mufti Sabah', 'city' => 'Kota Kinabalu', 'state' => 'Sabah'],
+            ['authority_name' => 'Mufti Sarawak', 'city' => 'Kuching', 'state' => 'Sarawak'],
         ];
 
         foreach ($authorities as $data) {

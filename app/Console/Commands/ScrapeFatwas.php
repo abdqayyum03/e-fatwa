@@ -12,6 +12,8 @@ use App\Scrapers\NegeriSembilanSource;
 use App\Scrapers\PenangSource;
 use App\Scrapers\PerakSource;
 use App\Scrapers\PerlisSource;
+use App\Scrapers\SabahSource;
+use App\Scrapers\SarawakSource;
 use App\Scrapers\SelangorSource;
 use App\Scrapers\WilayahPersekutuanSource;
 use Illuminate\Console\Command;
@@ -19,7 +21,7 @@ use Illuminate\Console\Command;
 class ScrapeFatwas extends Command
 {
     protected $signature = 'fatwa:scrape
-                            {source?* : Which sources to scrape (wp, perak, selangor, ns, kedah, perlis, penang, melaka, kelantan, johor). Default: all}
+                            {source?* : Which sources to scrape (wp, perak, selangor, ns, kedah, perlis, penang, melaka, kelantan, johor, sabah, sarawak). Default: all}
                             {--limit= : Only import this many fatwas per source (for testing)}
                             {--no-text : Skip downloading PDFs and extracting their text}
                             {--refresh-text : Re-extract text even for fatwas that already have it}';
@@ -33,6 +35,7 @@ class ScrapeFatwas extends Command
             new WilayahPersekutuanSource, new PerakSource, new SelangorSource, new NegeriSembilanSource,
             new KedahSource, new PerlisSource, new PenangSource,
             new MelakaSource, new KelantanSource, new JohorSource,
+            new SabahSource, new SarawakSource,
         ];
 
         return collect($sources)->keyBy(fn (FatwaSource $s) => $s->key())->all();

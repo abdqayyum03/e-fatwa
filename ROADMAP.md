@@ -26,7 +26,7 @@ Tech stack stays the same (Laravel 12, MySQL, Blade + Bootstrap 5.3, Leaflet). N
 **Goal:** more sources, fuller content, better search.
 
 - [x] **Full fatwa text:** the scraper opens each fatwa's page and saves its text, and the PDF link if there is one. Add a `source_url` column.
-- [x] **More sources:** the scraper is now a Laravel command (`php artisan fatwa:scrape`) with one adapter per website: Federal Territory, Perak, Selangor and Negeri Sembilan. Each fatwa is linked to its state's authority. *(Pahang pending: its portal was under maintenance in Nov 2026.)*
+- [x] **More sources:** the scraper is now a Laravel command (`php artisan fatwa:scrape`) with one adapter per website, now covering twelve of fourteen states (all except Pahang, under maintenance, and Terengganu, which publishes no list). Each fatwa is linked to its state's authority.
 - [x] **Better search:** MySQL full-text index on title and content, plus state and year filters (as in the SRS).
 - [x] **State comparison page** *(headline feature):* pick a category or keyword and see each state's fatwas side by side.
 

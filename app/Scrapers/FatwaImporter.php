@@ -71,10 +71,21 @@ class FatwaImporter
                 // Derived from the stored text on every run, so a re-run without
                 // re-downloading never puts back the less accurate listing values.
                 if ($text = $fatwa->full_text) {
-                    // Selangor gives only the web post date, and some sites give none:
-                    // use the gazette date printed in the document instead.
-                    if (($source->key() === 'selangor' || ! $fatwa->date_issued) && ($date = MalayDate::find($text, 600))) {
+                    // Selangor gives only the web post date, and some sites give none or
+                    // only a year: use the gazette date printed in the document instead
+                    // (for a bare year, only a date in that same year).
+                    $listed = (string) $fatwa->date_issued;
+                    $yearOnly = preg_match('/^\d{4}$/', $listed) === 1;
+
+                    if (($source->key() === 'selangor' || $listed === '' || $yearOnly)
+                        && ($date = MalayDate::find($text, 600))
+                        && (! $yearOnly || str_contains($date, $listed))) {
                         $fatwa->date_issued = $date;
+                    }
+
+                    // A gazette page header ("WARTA KERAJAAN NEGERI SABAH") means it was gazetted.
+                    if (! $fatwa->status && preg_match('/WARTA KERAJAAN/u', mb_substr($text, 0, 300))) {
+                        $fatwa->status = 'Diwartakan';
                     }
 
                     // Gazette number printed on the PDF, e.g. "P.U. (B) 59", "Sel. P.U. 17", "N.S. P.U. 12", "M. P.U. 7".
@@ -82,6 +93,9 @@ class FatwaImporter
                         $fatwa->gazette_no = preg_replace('/\s+/', ' ', $m[1]);
                     }
                 }
+
+                // date_fallback: a less reliable date, used only when nothing better was found.
+                $fatwa->date_issued ??= $record['date_fallback'] ?? null;
 
                 $fatwa->save();
 
