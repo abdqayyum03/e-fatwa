@@ -52,6 +52,13 @@ class AuthoritySeeder extends Seeder
                 'poscode' => '70000',
                 'state' => 'Negeri Sembilan',
             ],
+            // Added with their importers; only name, state and city (no unverified contact details).
+            ['authority_name' => 'Mufti Kedah', 'city' => 'Alor Setar', 'state' => 'Kedah'],
+            ['authority_name' => 'Mufti Perlis', 'city' => 'Kangar', 'state' => 'Perlis'],
+            ['authority_name' => 'Mufti Pulau Pinang', 'street' => 'Tingkat 48, KOMTAR', 'city' => 'George Town', 'state' => 'Pulau Pinang'],
+            ['authority_name' => 'Mufti Melaka', 'logo' => 'mufti-melaka.png', 'city' => 'Melaka', 'state' => 'Melaka'],
+            ['authority_name' => 'Mufti Kelantan', 'city' => 'Kota Bharu', 'state' => 'Kelantan'],
+            ['authority_name' => 'Mufti Johor', 'city' => 'Johor Bahru', 'state' => 'Johor'],
         ];
 
         foreach ($authorities as $data) {

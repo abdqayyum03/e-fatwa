@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Process;
  */
 class FatwaImporter
 {
-    private const MALAY_MONTHS = 'Januari|Februari|Mac|April|Mei|Jun|Julai|Ogos|September|Oktober|November|Disember';
-
     /** @var callable|null */
     private $output;
 
@@ -63,8 +61,11 @@ class FatwaImporter
                 if (! empty($record['full_text'])) {
                     // Sites that publish the fatwa as web text give it to us directly.
                     $fatwa->full_text = $record['full_text'];
-                } elseif ($this->withText && $fatwa->pdf_url && ($this->refreshText || $fatwa->full_text === null)) {
-                    $fatwa->full_text = $this->pdfText($fatwa->pdf_url);
+                } elseif ($this->withText && ($this->refreshText || $fatwa->full_text === null)
+                    && ($download = $record['download_url'] ?? $fatwa->pdf_url)) {
+                    // download_url: a link that only works for a short time (e.g. Penang's
+                    // tokened links), used to read the PDF but never stored.
+                    $fatwa->full_text = $this->pdfText($download);
                 }
 
                 // Derived from the stored text on every run, so a re-run without
@@ -72,12 +73,12 @@ class FatwaImporter
                 if ($text = $fatwa->full_text) {
                     // Selangor gives only the web post date, and some sites give none:
                     // use the gazette date printed in the document instead.
-                    if (($source->key() === 'selangor' || ! $fatwa->date_issued) && ($date = $this->malayDate($text))) {
+                    if (($source->key() === 'selangor' || ! $fatwa->date_issued) && ($date = MalayDate::find($text, 600))) {
                         $fatwa->date_issued = $date;
                     }
 
-                    // Gazette number printed on the PDF, e.g. "P.U. (B) 59", "Sel. P.U. 17", "N.S. P.U. 12".
-                    if (! $fatwa->gazette_no && preg_match('/\b((?:Sel\.|Pk\.|N\.\s?S\.)\s*P\.\s?U\.\s*\d+|P\.\s?U\.\s*\([AB]\)\s*\d+)/u', $text, $m)) {
+                    // Gazette number printed on the PDF, e.g. "P.U. (B) 59", "Sel. P.U. 17", "N.S. P.U. 12", "M. P.U. 7".
+                    if (! $fatwa->gazette_no && preg_match('/\b((?:Sel\.|Pk\.|N\.\s?S\.|M\.)\s*P\.\s?U\.\s*\d+|P\.\s?U\.\s*\([AB]\)\s*\d+)/u', $text, $m)) {
                         $fatwa->gazette_no = preg_replace('/\s+/', ' ', $m[1]);
                     }
                 }
@@ -142,29 +143,39 @@ class FatwaImporter
         return mb_strlen(preg_replace('/\s+/u', '', $text)) > 50 ? $text : null;
     }
 
-    private function malayDate(string $text): ?string
-    {
-        $head = mb_substr($text, 0, 600);
-
-        // "13 Februari 2026", and the older "8hb Jun 1998" / "26hb. Disember, 2002".
-        return preg_match('/\b(\d{1,2})(?:hb\.?)?\s+('.self::MALAY_MONTHS.'),?\s+((?:19|20)\d{2})\b/u', $head, $m)
-            ? "{$m[1]} {$m[2]} {$m[3]}"
-            : null;
-    }
-
-    /** Different sites name the same topic differently; store one name per topic. */
+    /**
+     * Different sites name the same topic differently ("IBADAH", "Ibadah",
+     * "Aqidah", "SOSIAL SYARIAH", "Lain-lain"); store one name per topic.
+     * Keys are lower-case.
+     */
     private const CATEGORY_ALIASES = [
-        'Ibadah' => 'Ibadat',
-        'Muamalat/Ekonomi' => 'Muamalat',
+        'ibadah' => 'Ibadat',
+        'ibadat' => 'Ibadat',
+        'aqidah' => 'Akidah',
+        'akidah' => 'Akidah',
+        'muamalat' => 'Muamalat',
+        'muamalat/ekonomi' => 'Muamalat',
+        'syariah' => 'Sosial/Syariah',
+        'sosial syariah' => 'Sosial/Syariah',
+        'sosial/syariah' => 'Sosial/Syariah',
+        'munakahat' => 'Munakahat',
+        'perubatan' => 'Perubatan',
+        'pelbagai' => 'Pelbagai',
+        'lain-lain' => 'Pelbagai',
     ];
 
     private function categoryId(?string $name): ?int
     {
-        if (! $name) {
+        // "Sosial / Syariah", "Sosial Syariah." -> "Sosial/Syariah", "Sosial Syariah"
+        $name = preg_replace(['/\s+/u', '/\s*\/\s*/u'], [' ', '/'], (string) $name);
+        $name = trim($name, " \t\n.,;:-");
+
+        if ($name === '') {
             return null;
         }
 
-        $name = self::CATEGORY_ALIASES[$name] ?? $name;
+        $name = self::CATEGORY_ALIASES[mb_strtolower($name)]
+            ?? (mb_strtoupper($name) === $name ? mb_convert_case($name, MB_CASE_TITLE) : $name);
 
         return Category::firstOrCreate(['category_name' => $name])->id;
     }

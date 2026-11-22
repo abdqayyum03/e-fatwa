@@ -1,16 +1,16 @@
 {{--
     Page header for inner pages.
     @include('partials.page-hero', [
-        'title' => 'Senarai Fatwa', 'subtitle' => '...', 'icon' => 'journal-text',
-        'crumbs' => ['Fatwa' => route('fatwas.index')],   // optional, last item is the current page
+        'title' => __('Senarai Fatwa'), 'subtitle' => __('...'), 'icon' => 'journal-text',
+        'crumbs' => [__('Fatwa') => route('fatwas.index')],   // optional, last item is the current page
     ])
     Anything in @section('hero-actions') is shown on the right.
 --}}
 <header class="page-hero">
     <div class="container-xl">
-        <nav aria-label="breadcrumb">
+        <nav aria-label="{{ __('breadcrumb') }}">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="bi bi-house-door"></i> Utama</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="bi bi-house-door"></i> {{ __('Utama') }}</a></li>
                 @foreach(($crumbs ?? []) as $label => $url)
                     @if($loop->last)
                         <li class="breadcrumb-item active" aria-current="page">{{ \Illuminate\Support\Str::limit($label, 60) }}</li>

@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Agensi Berautoriti')
+@section('title', __('Agensi Berautoriti'))
 
 @section('content')
 @include('partials.page-hero', [
-    'title' => 'Agensi Berautoriti',
-    'subtitle' => 'Jabatan mufti persekutuan dan negeri yang mengeluarkan fatwa di Malaysia.',
+    'title' => __('Agensi Berautoriti'),
+    'subtitle' => __('Jabatan mufti persekutuan dan negeri yang mengeluarkan fatwa di Malaysia.'),
     'icon' => 'bank',
-    'crumbs' => ['Agensi' => route('authorities.index')],
+    'crumbs' => [__('Agensi') => route('authorities.index')],
 ])
 
 <div class="container-xl page-body">
@@ -29,14 +29,14 @@
                         <h2 class="h5 mb-1" style="font-family: var(--ef-font)">{{ $authority->authority_name }}</h2>
                         <p class="small text-muted mb-3">{{ $authority->city }}</p>
                         <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
-                            <span><strong class="fs-5 display-font text-primary">{{ $authority->fatwas_count }}</strong> <span class="small text-muted">fatwa</span></span>
-                            <span class="small text-primary fw-semibold">Profil <i class="bi bi-arrow-right"></i></span>
+                            <span><strong class="fs-5 display-font text-primary">{{ $authority->fatwas_count }}</strong> <span class="small text-muted">{{ __('fatwa') }}</span></span>
+                            <span class="small text-primary fw-semibold">{{ __('Profil') }} <i class="bi bi-arrow-right"></i></span>
                         </div>
                     </div>
                 </a>
             </div>
         @empty
-            <div class="col-12"><div class="surface empty"><i class="bi bi-bank"></i>Tiada agensi dijumpai.</div></div>
+            <div class="col-12"><div class="surface empty"><i class="bi bi-bank"></i>{{ __('Tiada agensi dijumpai.') }}</div></div>
         @endforelse
     </div>
 </div>

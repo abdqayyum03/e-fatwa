@@ -14,8 +14,6 @@ class NegeriSembilanSource implements FatwaSource
 
     private const API = 'https://muftins.gov.my/wp-json/wp/v2/';
 
-    private const MONTHS = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
-
     public function key(): string
     {
         return 'ns';
@@ -85,12 +83,7 @@ class NegeriSembilanSource implements FatwaSource
             return null;
         }
 
-        $months = implode('|', self::MONTHS);
-        // Also the older style "8hb Jun 1998" / "26hb. Disember, 2002".
-        if (preg_match('/\b(\d{1,2})(?:hb\.?)?\s+('.$months.'),?\s+((?:19|20)\d{2})\b/iu', $text, $m)) {
-            return $m[1].' '.ucfirst(mb_strtolower($m[2])).' '.$m[3];
-        }
-
-        return preg_match('/Bil\.?\s*\d+\s*\/\s*((?:19|20)\d{2})/iu', $text, $m) ? $m[1] : null;
+        return MalayDate::find($text)
+            ?? (preg_match('/Bil\.?\s*\d+\s*\/\s*((?:19|20)\d{2})/iu', $text, $m) ? $m[1] : null);
     }
 }

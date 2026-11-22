@@ -51,7 +51,7 @@ class PreacherController extends Controller
 
         Preacher::create($validated);
 
-        return redirect()->route('preachers.index')->with('success', 'Pendakwah berjaya ditambah.');
+        return redirect()->route('preachers.index')->with('success', __('Pendakwah berjaya ditambah.'));
     }
 
     public function show(Preacher $preacher)
@@ -80,13 +80,13 @@ class PreacherController extends Controller
 
         $preacher->update($validated);
 
-        return redirect()->route('preachers.index')->with('success', 'Pendakwah berjaya dikemas kini.');
+        return redirect()->route('preachers.index')->with('success', __('Pendakwah berjaya dikemas kini.'));
     }
 
     public function destroy(Preacher $preacher)
     {
         $preacher->delete();
 
-        return redirect()->route('preachers.index')->with('success', 'Pendakwah berjaya dipadam.');
+        return redirect()->route('preachers.index')->with('success', __('Pendakwah berjaya dipadam.'));
     }
 }

@@ -13,13 +13,13 @@ class PrayerTimeController extends Controller
         $zone = strtoupper((string) $request->query('zone', PrayerTimes::DEFAULT_ZONE));
 
         if (! PrayerTimes::isValidZone($zone)) {
-            return response()->json(['message' => 'Zon tidak sah.'], 422);
+            return response()->json(['message' => __('Zon tidak sah.')], 422);
         }
 
         $data = $prayerTimes->today($zone);
 
         if (! $data) {
-            return response()->json(['message' => 'Waktu solat tidak dapat diperoleh daripada e-Solat buat masa ini.'], 503);
+            return response()->json(['message' => __('Waktu solat tidak dapat diperoleh daripada e-Solat buat masa ini.')], 503);
         }
 
         return response()->json($data + ['labels' => PrayerTimes::PRAYERS]);

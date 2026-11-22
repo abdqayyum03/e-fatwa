@@ -57,7 +57,7 @@ class MosqueController extends Controller
     {
         Mosque::create($this->validated($request));
 
-        return redirect()->route('mosques.index')->with('success', 'Masjid berjaya ditambah.');
+        return redirect()->route('mosques.index')->with('success', __('Masjid berjaya ditambah.'));
     }
 
     public function edit(Mosque $mosque)
@@ -69,14 +69,14 @@ class MosqueController extends Controller
     {
         $mosque->update($this->validated($request));
 
-        return redirect()->route('mosques.index')->with('success', 'Masjid berjaya dikemas kini.');
+        return redirect()->route('mosques.index')->with('success', __('Masjid berjaya dikemas kini.'));
     }
 
     public function destroy(Mosque $mosque)
     {
         $mosque->delete();
 
-        return redirect()->route('mosques.index')->with('success', 'Masjid berjaya dipadam.');
+        return redirect()->route('mosques.index')->with('success', __('Masjid berjaya dipadam.'));
     }
 
     private function validated(Request $request): array

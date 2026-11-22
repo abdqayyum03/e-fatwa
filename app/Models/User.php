@@ -22,6 +22,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'alerts_enabled',
+        'alert_categories',
+        'alert_states',
+        'locale',
+        // is_admin is deliberately NOT here: no form can make a user an admin.
     ];
 
     /**
@@ -45,6 +50,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'alerts_enabled' => 'boolean',
+            'alert_categories' => 'array',
+            'alert_states' => 'array',
+            'last_alert_sent_at' => 'datetime',
         ];
+    }
+
+    /** Fatwas this user has saved. */
+    public function bookmarks()
+    {
+        return $this->belongsToMany(Fatwa::class, 'bookmarks')->withTimestamps();
+    }
+
+    public function hasBookmarked(Fatwa $fatwa): bool
+    {
+        return $this->bookmarks()->whereKey($fatwa->getKey())->exists();
     }
 }

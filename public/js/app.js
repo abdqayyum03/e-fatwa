@@ -5,6 +5,8 @@
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  // Interface strings in the current language, provided by the layout (window.efI18n).
+  const t = (key, vars = {}) => (window.efI18n?.[key] ?? key).replace(/:(\w+)/g, (m, k) => (k in vars ? vars[k] : m));
 
   /* ---------- Theme (light / dark), remembered per browser ---------- */
   const themeBtn = $('#themeToggle');
@@ -12,7 +14,7 @@
     if (!themeBtn) return;
     const dark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     themeBtn.innerHTML = dark ? '<i class="bi bi-sun"></i>' : '<i class="bi bi-moon-stars"></i>';
-    themeBtn.setAttribute('aria-label', dark ? 'Tukar ke mod cerah' : 'Tukar ke mod gelap');
+    themeBtn.setAttribute('aria-label', dark ? t('Tukar ke mod cerah') : t('Tukar ke mod gelap'));
   };
   applyThemeIcon();
   themeBtn?.addEventListener('click', () => {
@@ -99,10 +101,10 @@
     const links = () => $$('a', box);
 
     const render = (items, q) => {
-      const all = `<a class="all" href="${input.form.action}?search=${encodeURIComponent(q)}"><i class="bi bi-search me-1"></i> Lihat semua hasil untuk “${escapeHtml(q)}”</a>`;
+      const all = `<a class="all" href="${input.form.action}?search=${encodeURIComponent(q)}"><i class="bi bi-search me-1"></i> ${t('Lihat semua hasil untuk “:q”', { q: escapeHtml(q) })}</a>`;
       box.innerHTML = items.length
         ? items.map((f) => `<a href="${f.url}" role="option"><span>${highlight(f.title, q)}</span><span class="meta">${escapeHtml(f.state || '')}${f.year ? ' · ' + f.year : ''}</span></a>`).join('') + all
-        : `<a class="all" href="${input.form.action}?search=${encodeURIComponent(q)}">Tiada cadangan. Cari “${escapeHtml(q)}” dalam teks penuh →</a>`;
+        : `<a class="all" href="${input.form.action}?search=${encodeURIComponent(q)}">${t('Tiada cadangan. Cari “:q” dalam teks penuh →', { q: escapeHtml(q) })}</a>`;
       box.classList.add('show');
       active = -1;
     };
@@ -192,11 +194,11 @@
 
     const load = async (zone) => {
       errorEl.hidden = true;
-      $('[data-prayer-date]', widget).textContent = 'Memuatkan…';
+      $('[data-prayer-date]', widget).textContent = t('Memuatkan…');
       try {
         const res = await fetch(widget.dataset.endpoint + '?zone=' + encodeURIComponent(zone), { headers: { Accept: 'application/json' } });
         const json = await res.json();
-        if (!res.ok) throw new Error(json.message || 'Ralat');
+        if (!res.ok) throw new Error(json.message || t('Ralat'));
         data = json;
         $$('li', list).forEach((li) => { $('b', li).textContent = data.times[li.dataset.prayer] || '--:--'; });
         $('[data-prayer-date]', widget).textContent = data.date + (data.hijri ? ' · ' + data.hijri + 'H' : '');
@@ -206,7 +208,7 @@
       } catch (e) {
         data = null;
         next.hidden = true;
-        errorEl.textContent = e.message || 'Waktu solat tidak dapat dimuatkan.';
+        errorEl.textContent = e.message || t('Waktu solat tidak dapat dimuatkan.');
         errorEl.hidden = false;
         $('[data-prayer-date]', widget).textContent = '';
       }
@@ -223,6 +225,79 @@
     load(zone);
   });
 
+  /* ---------- Bookmark button: save without reloading ---------- */
+  $$('form[data-bookmark]').forEach((form) => form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('button', form);
+    btn.disabled = true;
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'X-CSRF-TOKEN': $('input[name=_token]', form).value },
+      });
+      if (!res.ok) throw new Error();
+      const { saved } = await res.json();
+      btn.classList.toggle('btn-gold', saved);
+      btn.classList.toggle('btn-outline-primary', !saved);
+      btn.setAttribute('aria-pressed', saved);
+      $('i', btn).className = 'bi ' + (saved ? 'bi-bookmark-check-fill' : 'bi-bookmark');
+      $('span', btn).textContent = saved ? btn.dataset.labelOn : btn.dataset.labelOff;
+    } catch (err) {
+      form.submit(); // fall back to a normal form post
+    } finally {
+      btn.disabled = false;
+    }
+  }));
+
+  /* ---------- Tanya AI: ask without reloading ---------- */
+  $$('form[data-ask]').forEach((form) => {
+    const textarea = $('textarea', form);
+    const output = $('[data-ask-result]');
+    const button = $('button[type=submit]', form);
+
+    $$('[data-ask-example]', form).forEach((chip) => chip.addEventListener('click', () => {
+      textarea.value = chip.textContent.trim();
+      textarea.focus();
+    }));
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+      button.disabled = true;
+      const label = button.innerHTML;
+      button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> ' + t('Sedang berfikir…');
+      output.innerHTML = '<div class="surface p-4"><div class="placeholder-glow"><span class="placeholder col-10"></span><span class="placeholder col-8"></span><span class="placeholder col-11"></span><span class="placeholder col-6"></span></div></div>';
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { Accept: 'application/json', 'X-CSRF-TOKEN': $('input[name=_token]', form).value },
+          body: new FormData(form),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || (json.errors && Object.values(json.errors)[0][0]) || t('Ralat'));
+        output.innerHTML = json.card;
+        output.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+      } catch (err) {
+        output.innerHTML = '';
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-warning';
+        alert.textContent = err.message;
+        output.appendChild(alert);
+      } finally {
+        button.disabled = false;
+        button.innerHTML = label;
+      }
+    });
+  });
+
+  /* ---------- Show / hide password ---------- */
+  $$('[data-toggle-password]').forEach((btn) => btn.addEventListener('click', () => {
+    const input = document.getElementById(btn.dataset.togglePassword);
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    $('i', btn).className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+  }));
+
   /* ---------- Reading tools on a fatwa page ---------- */
   const docEl = $('.fatwa-doc');
   $$('[data-font]').forEach((btn) => btn.addEventListener('click', () => {
@@ -237,9 +312,9 @@
     const original = btn.innerHTML;
     try {
       await navigator.clipboard.writeText(btn.dataset.copy || window.location.href);
-      btn.innerHTML = '<i class="bi bi-check2"></i> Disalin';
+      btn.innerHTML = '<i class="bi bi-check2"></i> ' + t('Disalin');
     } catch (e) {
-      btn.innerHTML = '<i class="bi bi-x"></i> Gagal';
+      btn.innerHTML = '<i class="bi bi-x"></i> ' + t('Gagal');
     }
     setTimeout(() => { btn.innerHTML = original; }, 1800);
   }));

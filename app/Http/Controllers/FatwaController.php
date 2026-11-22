@@ -94,7 +94,7 @@ class FatwaController extends Controller
     {
         Fatwa::create($this->validated($request));
 
-        return redirect()->route('fatwas.index')->with('success', 'Fatwa berjaya disimpan.');
+        return redirect()->route('fatwas.index')->with('success', __('Fatwa berjaya disimpan.'));
     }
 
     public function show(Fatwa $fatwa)
@@ -111,7 +111,9 @@ class FatwaController extends Controller
                 ->get()
             : collect();
 
-        return view('fatwas.show', compact('fatwa', 'related'));
+        $saved = (bool) auth()->user()?->hasBookmarked($fatwa);
+
+        return view('fatwas.show', compact('fatwa', 'related', 'saved'));
     }
 
     public function edit(Fatwa $fatwa)
@@ -123,14 +125,14 @@ class FatwaController extends Controller
     {
         $fatwa->update($this->validated($request, $fatwa));
 
-        return redirect()->route('fatwas.show', $fatwa)->with('success', 'Fatwa berjaya dikemas kini.');
+        return redirect()->route('fatwas.show', $fatwa)->with('success', __('Fatwa berjaya dikemas kini.'));
     }
 
     public function destroy(Fatwa $fatwa)
     {
         $fatwa->delete();
 
-        return redirect()->route('fatwas.index')->with('success', 'Fatwa berjaya dipadam.');
+        return redirect()->route('fatwas.index')->with('success', __('Fatwa berjaya dipadam.'));
     }
 
     private function validated(Request $request, ?Fatwa $fatwa = null): array

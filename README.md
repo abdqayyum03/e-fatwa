@@ -21,9 +21,13 @@ Fatwas in Malaysia are published separately by each state and federal religious 
 | **Masjid Locator** | Mosque list plus an interactive map (Leaflet + OpenStreetMap): the list and map are linked, and "locate me" sorts mosques by distance (`/mosques`, `/mosques/map`). |
 | **Kuliah & Events** | Upcoming kuliah, ceramah, tazkirah and forums at mosques, filterable by mosque, preacher and type, with "add to calendar" (.ics) downloads. Shown on preacher pages and mosque map popups (`/kuliah`). |
 | **Prayer Times** | Today's times from JAKIM e-Solat for any of the 60 official zones, with a countdown to the next prayer; the chosen zone is remembered (`/waktu-solat` JSON). |
+| **Tanya AI** | Ask a question; the site finds matching fatwas with full-text search and Claude summarises only what those fatwas say, with numbered links to each one and a disclaimer that it is not a ruling. Needs a login and `ANTHROPIC_API_KEY` (`/tanya`). |
+| **Accounts & bookmarks** | Free sign-up (`/daftar`). Users save fatwas ("Simpanan saya") and manage their profile, password and alerts (`/akaun`). |
+| **Email alerts** | Opt-in weekly email of new fatwas in the categories and states a user follows, with a one-click signed unsubscribe link (`php artisan fatwa:send-alerts`). |
+| **Malay / English** | "EN | BM" switch in the navbar; Malay is the default. Remembered per visitor and per account. |
 | **Feedback** | Users submit feedback (name, email, phone, message) (`/feedbacks`). |
-| **Admin login** | Admins log in at `/login` to create, edit and delete fatwas, preachers, mosques and kuliah. |
-| **Fatwa importer** | `php artisan fatwa:scrape` imports fatwas from the Federal Territory, Selangor, Negeri Sembilan and Perak mufti websites, including their full text. |
+| **Admin login** | Admins log in at `/login` to create, edit and delete fatwas, preachers, mosques and kuliah. Admins only come from the seeder; sign-ups are ordinary users. |
+| **Fatwa importer** | `php artisan fatwa:scrape` imports fatwas from ten sources: Wilayah Persekutuan, Selangor, Negeri Sembilan, Perak, Kedah, Perlis, Pulau Pinang, Melaka, Kelantan and Johor, including their full text where it is published. |
 | **Import API** | `POST /api/fatwas/store` accepts JSON fatwas from external tools (needs an admin API token). |
 
 ### Interface
@@ -40,6 +44,8 @@ Fatwas in Malaysia are published separately by each state and federal religious 
 - **Frontend:** Blade templates, Bootstrap 5.3 + Bootstrap Icons (via CDN), Google Fonts (Fraunces, Plus Jakarta Sans, Amiri), `public/css/theme.css`, `public/js/app.js`
 - **Maps:** Leaflet 1.9.4 with OpenStreetMap tiles
 - **Charts:** Chart.js 4.4 (via CDN)
+- **AI:** Claude (`claude-opus-5-5`) through the official Anthropic PHP SDK (`anthropic-ai/sdk`), with server-side refusal fallbacks (`app/Services/FatwaAssistant.php`)
+- **Languages:** Laravel translations, Malay strings as keys with English in `lang/en.json` (`app/Http/Middleware/SetLocale.php`)
 - **Prayer times:** JAKIM e-Solat API, cached per zone per day (`app/Services/PrayerTimes.php`, zones in `config/prayer_zones.php`)
 - **Database:** MySQL (developed against a database named `eFatwa_db`)
 - **Search:** MySQL FULLTEXT index on fatwa title + text
@@ -113,7 +119,7 @@ Visitors can browse and search everything without logging in. Creating, editing 
 The importer reads each mufti website directly and saves fatwas to the database. It is safe to re-run: fatwas are matched by their source URL and updated instead of duplicated.
 
 ```bash
-php artisan fatwa:scrape                  # all sources: wp, perak, selangor, ns
+php artisan fatwa:scrape                  # all sources (list below)
 php artisan fatwa:scrape selangor         # one source
 php artisan fatwa:scrape --limit=5        # quick test, 5 per source
 php artisan fatwa:scrape --no-text        # skip PDF downloads (fast, no full text)
@@ -126,15 +132,22 @@ php artisan fatwa:scrape --refresh-text   # re-extract text for every fatwa
 | `perak` | mufti.perak.gov.my | Single HTML table of gazetted fatwas | Mostly no: most PDFs are scanned images |
 | `selangor` | muftiselangor.gov.my | WordPress JSON API (gazetted-fatwa category) | Only newer posts: posts from 2023 and earlier are page images |
 | `ns` | muftins.gov.my | WordPress JSON API (`fatwa` post type, with categories) | Yes, as web text; gazette PDFs are scans |
+| `kedah` | ifatwa.kedah.gov.my | Three HTML tables: gazetted, Irsyad Al-Fatwa, Irsyad Al-Hukmi | Yes, from PDF |
+| `perlis` | muftiperlis.gov.my | RSS feed of the "Himpunan Fatwa Negeri" category | Yes, as web text |
+| `penang` | mufti.penang.gov.my | HTML table of gazetted fatwas; PDF links expire, so they are read at import time and not stored | Yes, from PDF |
+| `melaka` | muftimelaka.gov.my | Three category lists, one page per fatwa | Yes, the page shows the gazette as text |
+| `kelantan` | data.gov.my (official open data, CC BY) | CSV of fatwas 2015–2018 | Yes, in the CSV |
+| `johor` | said.johor.gov.my (e-Fatwa Johor) | Status-filtered list (about 1,600) plus a detail page each | Yes, as web text |
 
 Notes:
 
-- The importer waits about a second between requests so it doesn't overload the government sites. A full run takes 15–20 minutes.
+- The importer waits about a second between requests so it doesn't overload the government sites, and identifies itself honestly as `e-fatwa-scraper/1.0`. A first full run takes about an hour (Johor alone is ~30 minutes); later runs skip PDFs already read.
 - PDF text is extracted with `pdftotext`. Set `PDFTOTEXT_PATH` in `.env` if it isn't on your PATH.
 - Some sites send an incomplete TLS certificate chain. The missing intermediate certificates are kept in `resources/certs/`.
 - Dates: when a site only gives an upload date, the importer reads the gazette or meeting date from the fatwa text instead. Selangor's image-only posts were all re-uploaded on one day in 2023, so their date is left unknown unless the title contains a year.
 - Categories with different names on different sites are merged (e.g. Ibadah → Ibadat, Muamalat/Ekonomi → Muamalat).
-- **Pahang** isn't imported: its portal (mufti.pahang.gov.my) was under maintenance in Nov 2026. JAKIM's i-FIQH portal was not used because its pages contained injected spam links.
+- **Not imported (Nov 2026):** **Pahang** (portal under maintenance), **Terengganu** (the mufti website publishes no fatwa list), plus Sabah and Sarawak (not attempted). JAKIM's i-FIQH portal was not used because its pages contained injected spam links.
+- **Kelantan** has no fatwa list on its own site; the department links to the official open-data set on data.gov.my, which only covers 2015–2018.
 - To add another state, write a class implementing `App\Scrapers\FatwaSource` and register it in `app/Console/Commands/ScrapeFatwas.php`.
 
 The older Node.js/Puppeteer script in `scraper/` (from the FYP) is superseded by this command.
@@ -168,16 +181,29 @@ The `docs/` folder contains the original academic documents:
 - `SRS.docx`: Software Requirements Specification
 - `SW01082193 FINAL REPORT.docx`: Final report
 
+## Running scheduled jobs
+
+Weekly jobs are defined in `routes/console.php`: re-import fatwas (Sunday 23:00) and send email alerts (Monday 08:00, Malaysian time). They run only while the scheduler runs:
+
+```bash
+php artisan schedule:work        # or a cron / Task Scheduler entry running "php artisan schedule:run" every minute
+```
+
+Email uses `MAIL_MAILER=log` by default (messages go to `storage/logs/laravel.log`); set the `MAIL_*` values in `.env` to send real email. Set `APP_URL` to the public address so links in emails are correct.
+
 ## Known gaps / ideas for future work
 
 See [ROADMAP.md](ROADMAP.md) for the full plan of fixes and new features.
 
 Things left unfinished at the end of the FYP, noted for anyone (or me) picking it up again:
 
-- **Scanned documents have no text.** Most Perak PDFs, Selangor posts from 2023 and earlier, and Negeri Sembilan's gazette PDFs are scanned images, so about 296 of 598 fatwas can only be found by title. OCR (e.g. Tesseract) would fix this.
-- **Unknown dates.** 197 fatwas have no known date (mostly Selangor's re-uploaded image posts and scanned gazettes).
-- **Four of fourteen states.** Pahang (portal under maintenance) and the other states still need adapters. The national portals (e-fatwa.gov.my, e-SMAF) were unreachable in Nov 2026.
-- **Categories** come from the Federal Territory and Negeri Sembilan sites; Perak and Selangor fatwas are uncategorised.
+- **Scanned documents have no text.** Most Perak PDFs, Selangor posts from 2023 and earlier, some Kedah PDFs and Negeri Sembilan's gazette PDFs are scanned images, so 323 of 2,732 fatwas can only be found by title. OCR (e.g. Tesseract) would fix this.
+- **Unknown dates.** 207 fatwas have no known date (mostly Selangor's re-uploaded image posts and scanned gazettes).
+- **Ten of fourteen states.** Missing: Pahang (portal under maintenance), Terengganu (no fatwa list online), Sabah and Sarawak (not attempted). Kelantan only covers 2015–2018 (its open-data set). The national portals (e-fatwa.gov.my, e-SMAF) were unreachable in Nov 2026.
+- **Categories** come from each site's own scheme (Johor alone uses Masjid and Wakaf heavily); Perak, Selangor, Kedah, Perlis and Penang publish none, so 671 fatwas are uncategorised.
+- **Uneven coverage.** Johor has 1,608 fatwas, about 60% of the database, so statistics and search results lean towards Johor.
+- **Laravel's own validation messages** ("The email field is required") are English in Malay mode, because the project has no Malay `lang/ms/validation.php`.
+- **Tanya AI** has only been tested without an API key; set `ANTHROPIC_API_KEY` and try a few questions before relying on it.
 - **No admin pages yet** for categories, religious authorities or reading submitted feedback (`CategoryController` is an empty stub).
 - **Authority profile columns missing.** The authority page shows `sejarah`, `visi`, `misi`, `objektif` and `org_chart`, but no migration creates them (they existed only in the old WAMP database), so those sections are blank. Add a migration and fill them in.
 - **Original data lost.** The FYP database lived in WampServer and was not exported. Fatwas are re-imported with `fatwa:scrape`, but preachers, mosques and kuliah start empty and must be added by an admin.

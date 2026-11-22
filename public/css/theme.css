@@ -162,7 +162,8 @@ a { text-decoration-thickness: 1px; text-underline-offset: 3px; }
 @media (min-width: 1200px) and (max-width: 1399.98px) {
   .ef-nav .nav-link i { display: none; }
   .ef-nav .nav-link { padding: .5rem .65rem !important; }
-  .nav-search { width: 210px; }
+  /* Not enough room for 8 links + search here; search stays on the pages themselves. */
+  .nav-search { display: none; }
 }
 .ef-nav .navbar-toggler { border: 0; color: #fff; }
 .ef-nav .navbar-toggler:focus { box-shadow: none; }
@@ -353,6 +354,11 @@ a { text-decoration-thickness: 1px; text-underline-offset: 3px; }
 [data-bs-theme="dark"] .date-badge .m { color: #0b1412; }
 .date-badge .d { font-family: var(--ef-display); font-size: 1.6rem; font-weight: 700; line-height: 1.2; padding: .2rem 0; }
 .date-badge .w { font-size: .7rem; color: var(--ef-muted); padding-bottom: .3rem; }
+
+/* ---------- Tanya AI ---------- */
+.ask-answer .answer-body { line-height: 1.75; }
+.ask-answer .answer-body ul { padding-left: 1.2rem; }
+.ask-answer .cite { font-size: .75em; font-weight: 700; text-decoration: none; vertical-align: super; padding: 0 .1rem; }
 
 /* ---------- Empty states ---------- */
 .empty { text-align: center; padding: 3.5rem 1rem; color: var(--ef-muted); }

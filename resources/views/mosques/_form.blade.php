@@ -8,28 +8,28 @@
 <div class="row g-4">
     <div class="col-lg-5">
         <div class="mb-3">
-            <label for="name" class="form-label">Nama masjid *</label>
+            <label for="name" class="form-label">{{ __('Nama masjid *') }}</label>
             <input type="text" id="name" name="name" class="form-control" value="{{ old('name', $mosque?->name) }}" required>
         </div>
         <div class="mb-3">
-            <label for="location" class="form-label">Lokasi (bandar / negeri) *</label>
+            <label for="location" class="form-label">{{ __('Lokasi (bandar / negeri) *') }}</label>
             <input type="text" id="location" name="location" class="form-control" value="{{ old('location', $mosque?->location) }}" required>
         </div>
         <div class="mb-3">
-            <label for="contact_info" class="form-label">No. telefon</label>
+            <label for="contact_info" class="form-label">{{ __('No. telefon') }}</label>
             <input type="text" id="contact_info" name="contact_info" class="form-control" value="{{ old('contact_info', $mosque?->contact_info) }}">
         </div>
         <div class="row g-2">
             <div class="col-6">
-                <label for="latitude" class="form-label">Latitud *</label>
+                <label for="latitude" class="form-label">{{ __('Latitud *') }}</label>
                 <input type="text" id="latitude" name="latitude" class="form-control" placeholder="3.1390" value="{{ old('latitude', $mosque?->latitude) }}" required>
             </div>
             <div class="col-6">
-                <label for="longitude" class="form-label">Longitud *</label>
+                <label for="longitude" class="form-label">{{ __('Longitud *') }}</label>
                 <input type="text" id="longitude" name="longitude" class="form-control" placeholder="101.6869" value="{{ old('longitude', $mosque?->longitude) }}" required>
             </div>
         </div>
-        <p class="form-text"><i class="bi bi-hand-index"></i> Klik pada peta untuk mengisi koordinat secara automatik.</p>
+        <p class="form-text"><i class="bi bi-hand-index"></i> {{ __('Klik pada peta untuk mengisi koordinat secara automatik.') }}</p>
     </div>
     <div class="col-lg-7">
         <div id="pickMap" style="height: 360px; border-radius: var(--ef-radius); border: 1px solid var(--ef-border)"></div>

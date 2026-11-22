@@ -1,11 +1,17 @@
 <?php
 
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AlertUnsubscribeController;
+use App\Http\Controllers\AskController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\AuthorityController;
+use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FatwaController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\LectureController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MosqueController;
 use App\Http\Controllers\PrayerTimeController;
 use App\Http\Controllers\PreacherController;
@@ -33,20 +39,40 @@ Route::get('/mosques/map', [MosqueController::class, 'map'])->name('mosques.map'
 Route::get('/feedbacks', [FeedbackController::class, 'index'])->name('feedbacks.index');
 Route::post('/feedbacks', [FeedbackController::class, 'store'])->name('feedbacks.store');
 
+Route::get('/tanya', [AskController::class, 'index'])->name('ask.index');
+Route::get('/bahasa/{locale}', LocaleController::class)->name('locale');
+
+// Signed link from the alert email: works without logging in, only for that user.
+Route::get('/makluman/berhenti/{user}', AlertUnsubscribeController::class)
+    ->middleware('signed:relative')->name('alerts.unsubscribe');
+
 /*
 |--------------------------------------------------------------------------
-| Admin login
+| Accounts
 |--------------------------------------------------------------------------
-| There is no public registration. Admin accounts are created by the
-| AdminUserSeeder from the ADMIN_* values in .env.
+| Anyone can register an ordinary account (bookmarks, alerts, Tanya AI).
+| Admin accounts come only from the AdminUserSeeder (ADMIN_* in .env).
 */
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:5,1');
+    Route::get('/daftar', [RegisterController::class, 'create'])->name('register');
+    Route::post('/daftar', [RegisterController::class, 'store'])->middleware('throttle:5,1');
 });
 
-Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
+    Route::get('/akaun', [AccountController::class, 'edit'])->name('account.edit');
+    Route::put('/akaun', [AccountController::class, 'update'])->name('account.update');
+    Route::put('/akaun/kata-laluan', [AccountController::class, 'updatePassword'])->middleware('throttle:5,1')->name('account.password');
+
+    Route::get('/akaun/simpanan', [BookmarkController::class, 'index'])->name('bookmarks.index');
+    Route::post('/fatwas/{fatwa}/simpan', [BookmarkController::class, 'toggle'])->name('bookmarks.toggle');
+
+    Route::post('/tanya', [AskController::class, 'store'])->middleware('throttle:ask')->name('ask.store');
+});
 
 /*
 |--------------------------------------------------------------------------

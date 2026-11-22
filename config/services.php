@@ -35,6 +35,12 @@ return [
         ],
     ],
 
+    // Claude API for the "Tanya AI" helper. Leave the key empty to turn the feature off.
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
+    ],
+
     // Poppler's pdftotext, used by the fatwa scraper to read PDF text.
     'pdftotext' => [
         'path' => env('PDFTOTEXT_PATH', 'pdftotext'),

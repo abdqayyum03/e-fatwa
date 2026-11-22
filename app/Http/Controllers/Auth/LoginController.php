@@ -23,7 +23,7 @@ class LoginController extends Controller
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => 'E-mel atau kata laluan tidak sah.',
+                'email' => __('E-mel atau kata laluan tidak sah.'),
             ]);
         }
 

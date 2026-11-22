@@ -106,7 +106,7 @@ class LectureController extends Controller
     {
         $lecture = Lecture::create($this->validated($request));
 
-        return redirect()->route('lectures.show', $lecture)->with('success', 'Kuliah berjaya ditambah.');
+        return redirect()->route('lectures.show', $lecture)->with('success', __('Kuliah berjaya ditambah.'));
     }
 
     public function edit(Lecture $lecture)
@@ -118,14 +118,14 @@ class LectureController extends Controller
     {
         $lecture->update($this->validated($request));
 
-        return redirect()->route('lectures.show', $lecture)->with('success', 'Kuliah berjaya dikemas kini.');
+        return redirect()->route('lectures.show', $lecture)->with('success', __('Kuliah berjaya dikemas kini.'));
     }
 
     public function destroy(Lecture $lecture)
     {
         $lecture->delete();
 
-        return redirect()->route('lectures.index')->with('success', 'Kuliah berjaya dipadam.');
+        return redirect()->route('lectures.index')->with('success', __('Kuliah berjaya dipadam.'));
     }
 
     private function validated(Request $request): array
@@ -140,8 +140,8 @@ class LectureController extends Controller
             'preacher_id' => 'nullable|exists:preachers,id',
             'venue' => 'nullable|required_without:mosque_id|string|max:255',
         ], [
-            'venue.required_without' => 'Pilih masjid atau nyatakan tempat.',
-            'ends_at.after' => 'Waktu tamat mesti selepas waktu mula.',
+            'venue.required_without' => __('Pilih masjid atau nyatakan tempat.'),
+            'ends_at.after' => __('Waktu tamat mesti selepas waktu mula.'),
         ]);
     }
 

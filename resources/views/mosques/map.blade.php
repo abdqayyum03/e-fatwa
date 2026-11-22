@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Peta Masjid')
+@section('title', __('Peta Masjid'))
 
 @section('hero-actions')
-    <a href="{{ route('mosques.index') }}" class="btn btn-light"><i class="bi bi-list-ul"></i> Senarai</a>
+    <a href="{{ route('mosques.index') }}" class="btn btn-light"><i class="bi bi-list-ul"></i> {{ __('Senarai') }}</a>
     @can('admin')
-        <a href="{{ route('mosques.create') }}" class="btn btn-gold"><i class="bi bi-plus-lg"></i> Tambah</a>
+        <a href="{{ route('mosques.create') }}" class="btn btn-gold"><i class="bi bi-plus-lg"></i> {{ __('Tambah') }}</a>
     @endcan
 @endsection
 
@@ -15,18 +15,18 @@
 
 @section('content')
 @include('partials.page-hero', [
-    'title' => 'Peta Masjid',
-    'subtitle' => 'Pilih masjid dalam senarai untuk melihatnya di peta, atau gunakan lokasi anda untuk mencari yang terdekat.',
+    'title' => __('Peta Masjid'),
+    'subtitle' => __('Pilih masjid dalam senarai untuk melihatnya di peta, atau gunakan lokasi anda untuk mencari yang terdekat.'),
     'icon' => 'geo-alt',
-    'crumbs' => ['Masjid' => route('mosques.index'), 'Peta' => null],
+    'crumbs' => [__('Masjid') => route('mosques.index'), __('Peta') => null],
 ])
 
 <div class="container-xl page-body">
     <div class="map-layout">
         <div class="surface d-flex flex-column overflow-hidden">
             <div class="p-3 border-bottom d-flex gap-2">
-                <input type="search" id="mosqueFilter" class="form-control form-control-sm" placeholder="Tapis masjid..." aria-label="Tapis masjid">
-                <button type="button" id="locateMe" class="btn btn-outline-primary btn-sm text-nowrap" title="Cari masjid terdekat">
+                <input type="search" id="mosqueFilter" class="form-control form-control-sm" placeholder="{{ __('Tapis masjid...') }}" aria-label="{{ __('Tapis masjid') }}">
+                <button type="button" id="locateMe" class="btn btn-outline-primary btn-sm text-nowrap" title="{{ __('Cari masjid terdekat') }}">
                     <i class="bi bi-crosshair"></i>
                 </button>
             </div>
@@ -39,23 +39,23 @@
                 @empty
                     <div class="empty py-5">
                         <i class="bi bi-geo-alt"></i>
-                        Belum ada masjid dengan koordinat.
-                        @can('admin') <div class="mt-2"><a href="{{ route('mosques.create') }}">Tambah masjid</a></div> @endcan
+                        {{ __('Belum ada masjid dengan koordinat.') }}
+                        @can('admin') <div class="mt-2"><a href="{{ route('mosques.create') }}">{{ __('Tambah masjid') }}</a></div> @endcan
                     </div>
                 @endforelse
             </div>
-            <div class="px-3 py-2 border-top small text-muted">{{ $mosques->count() }} masjid</div>
+            <div class="px-3 py-2 border-top small text-muted">{{ __(':count masjid', ['count' => $mosques->count()]) }}</div>
         </div>
-        <div id="map" role="region" aria-label="Peta masjid"></div>
+        <div id="map" role="region" aria-label="{{ __('Peta masjid') }}"></div>
     </div>
 
     <div class="row g-4 mt-1">
         <div class="col-md-6 col-lg-4">@include('partials.prayer-times')</div>
         <div class="col-md-6 col-lg-8">
             <div class="surface p-4 h-100">
-                <h2 class="h5">Kuliah di masjid</h2>
-                <p class="text-muted small">Lihat jadual kuliah dan ceramah yang akan datang di masjid-masjid dalam direktori.</p>
-                <a href="{{ route('lectures.index') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar-event"></i> Jadual kuliah</a>
+                <h2 class="h5">{{ __('Kuliah di masjid') }}</h2>
+                <p class="text-muted small">{{ __('Lihat jadual kuliah dan ceramah yang akan datang di masjid-masjid dalam direktori.') }}</p>
+                <a href="{{ route('lectures.index') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar-event"></i> {{ __('Jadual kuliah') }}</a>
             </div>
         </div>
     </div>
@@ -84,8 +84,8 @@
                 markers[m.id] = L.marker([m.latitude, m.longitude], { icon }).addTo(map).bindPopup(
                     '<strong>' + esc(m.name) + '</strong><br><span class="text-muted">' + esc(m.location) + '</span>' +
                     (m.contact_info ? '<br><i class="bi bi-telephone"></i> ' + esc(m.contact_info) : '') +
-                    (m.upcoming_lectures ? '<br><a href="{{ route('lectures.index') }}?mosque=' + m.id + '"><i class="bi bi-calendar-event"></i> ' + m.upcoming_lectures + ' kuliah akan datang</a>' : '') +
-                    '<br><a href="' + directions + '" target="_blank" rel="noopener">Dapatkan arah →</a>'
+                    (m.upcoming_lectures ? '<br><a href="{{ route('lectures.index') }}?mosque=' + m.id + '"><i class="bi bi-calendar-event"></i> ' + @json(__(':count kuliah akan datang')).replace(':count', m.upcoming_lectures) + '</a>' : '') +
+                    '<br><a href="' + directions + '" target="_blank" rel="noopener">' + @json(__('Dapatkan arah →')) + '</a>'
                 );
             });
             if (mosques.length) map.fitBounds(L.featureGroup(Object.values(markers)).getBounds().pad(0.2), { maxZoom: 13 });
@@ -110,10 +110,10 @@
 
             // Nearest mosques: sort the list by distance from the visitor (location stays in the browser).
             document.getElementById('locateMe').addEventListener('click', () => {
-                if (!navigator.geolocation) return alert('Pelayar anda tidak menyokong lokasi.');
+                if (!navigator.geolocation) return alert(@json(__('Pelayar anda tidak menyokong lokasi.')));
                 navigator.geolocation.getCurrentPosition((pos) => {
                     const me = L.latLng(pos.coords.latitude, pos.coords.longitude);
-                    L.circleMarker(me, { radius: 8, color: '#fff', weight: 3, fillColor: '#3884c7', fillOpacity: 1 }).addTo(map).bindPopup('Lokasi anda');
+                    L.circleMarker(me, { radius: 8, color: '#fff', weight: 3, fillColor: '#3884c7', fillOpacity: 1 }).addTo(map).bindPopup(@json(__('Lokasi anda')));
                     const buttons = [...list.querySelectorAll('button[data-id]')];
                     buttons.forEach((b) => {
                         const d = markers[b.dataset.id] ? me.distanceTo(markers[b.dataset.id].getLatLng()) / 1000 : Infinity;
@@ -122,7 +122,7 @@
                     });
                     buttons.sort((a, b) => a.dataset.distance - b.dataset.distance).forEach((b) => list.appendChild(b));
                     map.flyTo(me, 12);
-                }, () => alert('Lokasi tidak dapat diperoleh. Sila benarkan akses lokasi.'));
+                }, () => alert(@json(__('Lokasi tidak dapat diperoleh. Sila benarkan akses lokasi.'))));
             });
         })();
     </script>

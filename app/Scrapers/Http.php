@@ -57,7 +57,15 @@ trait Http
         }
 
         $parts = parse_url($base);
+        $origin = $parts['scheme'].'://'.$parts['host'];
 
-        return $parts['scheme'].'://'.$parts['host'].'/'.ltrim($href, '/');
+        if (str_starts_with($href, '/')) {
+            return $origin.$href;
+        }
+
+        // Relative link: resolve against the base page's folder ("lampiran/a.pdf").
+        $dir = rtrim(dirname(($parts['path'] ?? '/').'x'), '/\\');
+
+        return $origin.$dir.'/'.$href;
     }
 }

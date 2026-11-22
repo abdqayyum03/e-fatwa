@@ -1,20 +1,20 @@
 @extends('layouts.app')
 
-@section('title', 'Senarai Masjid')
+@section('title', __('Senarai Masjid'))
 
 @section('hero-actions')
-    <a href="{{ route('mosques.map') }}" class="btn btn-light"><i class="bi bi-map"></i> Lihat peta</a>
+    <a href="{{ route('mosques.map') }}" class="btn btn-light"><i class="bi bi-map"></i> {{ __('Lihat peta') }}</a>
     @can('admin')
-        <a href="{{ route('mosques.create') }}" class="btn btn-gold"><i class="bi bi-plus-lg"></i> Tambah</a>
+        <a href="{{ route('mosques.create') }}" class="btn btn-gold"><i class="bi bi-plus-lg"></i> {{ __('Tambah') }}</a>
     @endcan
 @endsection
 
 @section('content')
 @include('partials.page-hero', [
-    'title' => 'Senarai Masjid',
-    'subtitle' => 'Cari masjid mengikut nama atau lokasi.',
+    'title' => __('Senarai Masjid'),
+    'subtitle' => __('Cari masjid mengikut nama atau lokasi.'),
     'icon' => 'building',
-    'crumbs' => ['Masjid' => route('mosques.index')],
+    'crumbs' => [__('Masjid') => route('mosques.index')],
 ])
 
 <div class="container-xl page-body">
@@ -23,19 +23,19 @@
             <div class="col-md-7">
                 <div class="position-relative">
                     <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
-                    <input type="search" name="search" value="{{ request('search') }}" class="form-control ps-5" placeholder="Nama atau lokasi masjid" aria-label="Cari masjid" data-primary-search>
+                    <input type="search" name="search" value="{{ request('search') }}" class="form-control ps-5" placeholder="{{ __('Nama atau lokasi masjid') }}" aria-label="{{ __('Cari masjid') }}" data-primary-search>
                 </div>
             </div>
             <div class="col-8 col-md-4">
-                <select name="location" class="form-select" aria-label="Lokasi">
-                    <option value="">Semua lokasi</option>
+                <select name="location" class="form-select" aria-label="{{ __('Lokasi') }}">
+                    <option value="">{{ __('Semua lokasi') }}</option>
                     @foreach($locations as $loc)
                         <option value="{{ $loc }}" @selected(request('location') == $loc)>{{ $loc }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="col-4 col-md-1 d-grid">
-                <button type="submit" class="btn btn-primary" aria-label="Cari"><i class="bi bi-search"></i></button>
+                <button type="submit" class="btn btn-primary" aria-label="{{ __('Cari') }}"><i class="bi bi-search"></i></button>
             </div>
         </div>
     </form>
@@ -61,14 +61,14 @@
                     </div>
                     <div class="mt-auto d-flex gap-2">
                         <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($mapQuery) }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm flex-fill">
-                            <i class="bi bi-sign-turn-right"></i> Arah
+                            <i class="bi bi-sign-turn-right"></i> {{ __('Arah') }}
                         </a>
                         @can('admin')
-                            <a href="{{ route('mosques.edit', $mosque) }}" class="btn btn-ghost btn-sm" aria-label="Sunting"><i class="bi bi-pencil"></i></a>
-                            <form action="{{ route('mosques.destroy', $mosque) }}" method="POST" onsubmit="return confirm('Padam masjid ini?')">
+                            <a href="{{ route('mosques.edit', $mosque) }}" class="btn btn-ghost btn-sm" aria-label="{{ __('Sunting') }}"><i class="bi bi-pencil"></i></a>
+                            <form action="{{ route('mosques.destroy', $mosque) }}" method="POST" onsubmit="return confirm('{{ __('Padam masjid ini?') }}')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-ghost btn-sm text-danger" aria-label="Padam"><i class="bi bi-trash"></i></button>
+                                <button type="submit" class="btn btn-ghost btn-sm text-danger" aria-label="{{ __('Padam') }}"><i class="bi bi-trash"></i></button>
                             </form>
                         @endcan
                     </div>
@@ -79,10 +79,10 @@
                 <div class="surface empty">
                     <i class="bi bi-building"></i>
                     @if(request()->hasAny(['search', 'location']) && (request('search') || request('location')))
-                        Tiada masjid sepadan dengan carian. <a href="{{ route('mosques.index') }}">Kosongkan tapisan</a>
+                        {{ __('Tiada masjid sepadan dengan carian.') }} <a href="{{ route('mosques.index') }}">{{ __('Kosongkan tapisan') }}</a>
                     @else
-                        Belum ada masjid dalam senarai.
-                        @can('admin') <div class="mt-3"><a href="{{ route('mosques.create') }}" class="btn btn-primary btn-sm">Tambah masjid pertama</a></div> @endcan
+                        {{ __('Belum ada masjid dalam senarai.') }}
+                        @can('admin') <div class="mt-3"><a href="{{ route('mosques.create') }}" class="btn btn-primary btn-sm">{{ __('Tambah masjid pertama') }}</a></div> @endcan
                     @endif
                 </div>
             </div>

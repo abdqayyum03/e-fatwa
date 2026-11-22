@@ -43,10 +43,10 @@ Tech stack stays the same (Laravel 12, MySQL, Blade + Bootstrap 5.3, Leaflet). N
 
 **Goal:** personal features and an AI helper.
 
-- [ ] **Public user accounts and bookmarks:** turn registration back on for regular users so they can save fatwas.
-- [ ] **Email alerts:** users follow categories and get a weekly email of new fatwas (Laravel scheduler + Mail).
-- [ ] **Malay/English interface:** move all interface text into translation files and add a language switch.
-- [ ] **AI question helper:** the site searches the fatwa database first, then Claude summarises only the fatwas found, with links to each one. Always shows a disclaimer that it is a summary, not a ruling. API key stays in `.env`; requests run through Laravel's queue.
+- [x] **Public user accounts and bookmarks:** turn registration back on for regular users so they can save fatwas.
+- [x] **Email alerts:** users follow categories and get a weekly email of new fatwas (Laravel scheduler + Mail).
+- [x] **Malay/English interface:** move all interface text into translation files and add a language switch.
+- [x] **AI question helper:** the site searches the fatwa database first, then Claude summarises only the fatwas found, with links to each one. Always shows a disclaimer that it is a summary, not a ruling. API key stays in `.env`. *(Done: answers are returned directly, not queued; rate-limited per user, and cached for a day per question.)*
 
 ---
 
@@ -60,7 +60,7 @@ Tech stack stays the same (Laravel 12, MySQL, Blade + Bootstrap 5.3, Leaflet). N
 | 3 | Chart.js (CDN) | Dashboard charts |
 | 3 | JAKIM e-Solat API | Prayer times |
 | 3–4 | Alpine.js (CDN) or Livewire *(optional)* | Small interactive parts such as live search and bookmark buttons |
-| 4 | Claude API via Laravel HTTP client | AI question helper |
+| 4 | Claude API via the official Anthropic PHP SDK (`anthropic-ai/sdk`) | AI question helper |
 
 ## Hosting notes
 

@@ -13,7 +13,7 @@
     'title' => $authority->authority_name,
     'subtitle' => $authority->state,
     'icon' => 'bank',
-    'crumbs' => ['Agensi' => route('authorities.index'), $authority->authority_name => null],
+    'crumbs' => [__('Agensi') => route('authorities.index'), $authority->authority_name => null],
 ])
 
 <div class="container-xl page-body">
@@ -32,19 +32,19 @@
                 <div class="p-4">
                     <ul class="info-list">
                         @if($authority->street || $authority->city)
-                            <li><i class="bi bi-geo-alt"></i><div><small>Alamat</small>
+                            <li><i class="bi bi-geo-alt"></i><div><small>{{ __('Alamat') }}</small>
                                 {{ collect([$authority->street, trim($authority->poscode . ' ' . $authority->city), $authority->state])->filter()->join(', ') }}
                             </div></li>
                         @endif
                         @if($authority->contact_info)
-                            <li><i class="bi bi-telephone"></i><div><small>Hubungi</small>{{ $authority->contact_info }}</div></li>
+                            <li><i class="bi bi-telephone"></i><div><small>{{ __('Hubungi') }}</small>{{ $authority->contact_info }}</div></li>
                         @endif
-                        <li><i class="bi bi-journal-text"></i><div><small>Fatwa dalam pangkalan data</small>{{ $authority->fatwas_count }}</div></li>
+                        <li><i class="bi bi-journal-text"></i><div><small>{{ __('Fatwa dalam pangkalan data') }}</small>{{ $authority->fatwas_count }}</div></li>
                     </ul>
                     @if($authority->street)
                         <a class="btn btn-outline-primary w-100 mt-3" target="_blank" rel="noopener"
                            href="https://www.google.com/maps/search/?api=1&query={{ urlencode($authority->authority_name . ' ' . $authority->street . ' ' . $authority->city) }}">
-                            <i class="bi bi-map"></i> Lihat di peta
+                            <i class="bi bi-map"></i> {{ __('Lihat di peta') }}
                         </a>
                     @endif
                 </div>
@@ -55,7 +55,7 @@
             @if($byYear->isNotEmpty())
                 @php($max = max(1, $byYear->max()))
                 <div class="surface p-4 mb-4 reveal">
-                    <h2 class="h5 mb-3">Fatwa mengikut tahun</h2>
+                    <h2 class="h5 mb-3">{{ __('Fatwa mengikut tahun') }}</h2>
                     <div class="d-flex align-items-end gap-2" style="height: 140px">
                         @foreach($byYear->sortKeys() as $year => $total)
                             <a href="{{ route('fatwas.index', ['state' => $authority->state, 'year' => $year]) }}" class="flex-fill text-center text-decoration-none"
@@ -69,15 +69,15 @@
             @endif
 
             <div class="d-flex justify-content-between align-items-end mb-3">
-                <h2 class="h4 mb-0">Fatwa terkini</h2>
+                <h2 class="h4 mb-0">{{ __('Fatwa terkini') }}</h2>
                 @if($authority->fatwas_count > $latest->count())
-                    <a href="{{ route('fatwas.index', ['state' => $authority->state]) }}" class="small fw-semibold">Semua {{ $authority->fatwas_count }} <i class="bi bi-arrow-right"></i></a>
+                    <a href="{{ route('fatwas.index', ['state' => $authority->state]) }}" class="small fw-semibold">{{ __('Semua :count', ['count' => $authority->fatwas_count]) }} <i class="bi bi-arrow-right"></i></a>
                 @endif
             </div>
             <div class="surface overflow-hidden">
                 @forelse($latest as $fatwa)
                     <a href="{{ route('fatwas.show', $fatwa) }}" class="fatwa-item">
-                        <div class="year"><b>{{ $fatwa->issued_year ?? '–' }}</b><small>Tahun</small></div>
+                        <div class="year"><b>{{ $fatwa->issued_year ?? '–' }}</b><small>{{ __('Tahun') }}</small></div>
                         <div class="flex-grow-1">
                             <div class="title">{{ $fatwa->title }}</div>
                             <div class="meta-row">
@@ -87,7 +87,7 @@
                         </div>
                     </a>
                 @empty
-                    <div class="empty"><i class="bi bi-journal"></i>Belum ada fatwa daripada agensi ini dalam pangkalan data.</div>
+                    <div class="empty"><i class="bi bi-journal"></i>{{ __('Belum ada fatwa daripada agensi ini dalam pangkalan data.') }}</div>
                 @endforelse
             </div>
         </div>

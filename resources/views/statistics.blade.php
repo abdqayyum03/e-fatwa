@@ -1,68 +1,68 @@
 @extends('layouts.app')
 
-@section('title', 'Statistik Fatwa')
+@section('title', __('Statistik Fatwa'))
 
 @section('content')
 @include('partials.page-hero', [
-    'title' => 'Statistik Fatwa',
-    'subtitle' => 'Gambaran keseluruhan fatwa dalam pangkalan data mengikut negeri, tahun dan kategori.',
+    'title' => __('Statistik Fatwa'),
+    'subtitle' => __('Gambaran keseluruhan fatwa dalam pangkalan data mengikut negeri, tahun dan kategori.'),
     'icon' => 'bar-chart',
-    'crumbs' => ['Statistik' => route('statistics')],
+    'crumbs' => [__('Statistik') => route('statistics')],
 ])
 
 <div class="container-xl page-body">
     {{-- KPI tiles --}}
     <div class="surface mb-4 reveal">
         <div class="row g-0">
-            <div class="col-6 col-md-3 stat"><div class="num" data-count="{{ $totals['fatwas'] }}">0</div><div class="lbl">Jumlah fatwa</div></div>
+            <div class="col-6 col-md-3 stat"><div class="num" data-count="{{ $totals['fatwas'] }}">0</div><div class="lbl">{{ __('Jumlah fatwa') }}</div></div>
             <div class="col-6 col-md-3 stat">
                 <div class="num">{{ $totals['fatwas'] ? round($totals['with_text'] / $totals['fatwas'] * 100) : 0 }}%</div>
-                <div class="lbl">Boleh dicari teks penuh</div>
+                <div class="lbl">{{ __('Boleh dicari teks penuh') }}</div>
             </div>
-            <div class="col-6 col-md-3 stat"><div class="num" data-count="{{ $totals['gazetted'] }}">0</div><div class="lbl">Diwartakan</div></div>
+            <div class="col-6 col-md-3 stat"><div class="num" data-count="{{ $totals['gazetted'] }}">0</div><div class="lbl">{{ __('Diwartakan') }}</div></div>
             <div class="col-6 col-md-3 stat">
                 <div class="num" style="font-size: 1.7rem">{{ $totals['from'] ?? '–' }}–{{ $totals['to'] ?? '–' }}</div>
-                <div class="lbl">Tempoh liputan</div>
+                <div class="lbl">{{ __('Tempoh liputan') }}</div>
             </div>
         </div>
     </div>
 
     @if($totals['fatwas'] === 0)
-        <div class="surface empty"><i class="bi bi-bar-chart"></i>Belum ada data. Jalankan <code>php artisan fatwa:scrape</code>.</div>
+        <div class="surface empty"><i class="bi bi-bar-chart"></i>{{ __('Belum ada data. Jalankan') }} <code>{{ __('php artisan fatwa:scrape') }}</code>.</div>
     @else
         <div class="row g-4">
             <div class="col-lg-7">
                 <div class="surface p-4 h-100 reveal">
-                    <h2 class="h5">Fatwa mengikut negeri</h2>
-                    <p class="small text-muted">Bahagian gelap: fatwa dengan teks penuh yang boleh dicari.</p>
-                    <div class="chart-box"><canvas id="chartStates" aria-label="Carta fatwa mengikut negeri" role="img"></canvas></div>
+                    <h2 class="h5">{{ __('Fatwa mengikut negeri') }}</h2>
+                    <p class="small text-muted">{{ __('Bahagian gelap: fatwa dengan teks penuh yang boleh dicari.') }}</p>
+                    <div class="chart-box"><canvas id="chartStates" aria-label="{{ __('Carta fatwa mengikut negeri') }}" role="img"></canvas></div>
                 </div>
             </div>
             <div class="col-lg-5">
                 <div class="surface p-4 h-100 reveal" style="--d:.08s">
-                    <h2 class="h5">Kategori utama</h2>
+                    <h2 class="h5">{{ __('Kategori utama') }}</h2>
                     <p class="small text-muted">{{ $totals['uncategorised'] }} fatwa belum dikategorikan oleh sumbernya.</p>
-                    <div class="chart-box"><canvas id="chartCategories" aria-label="Carta kategori fatwa" role="img"></canvas></div>
+                    <div class="chart-box"><canvas id="chartCategories" aria-label="{{ __('Carta kategori fatwa') }}" role="img"></canvas></div>
                 </div>
             </div>
             <div class="col-12">
                 <div class="surface p-4 reveal">
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                        <h2 class="h5 mb-0">Fatwa mengikut tahun</h2>
-                        <div class="btn-group btn-group-sm" role="group" aria-label="Jenis carta">
-                            <button type="button" class="btn btn-outline-primary active" data-year-mode="stacked">Bertindan</button>
-                            <button type="button" class="btn btn-outline-primary" data-year-mode="line">Garis</button>
+                        <h2 class="h5 mb-0">{{ __('Fatwa mengikut tahun') }}</h2>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="{{ __('Jenis carta') }}">
+                            <button type="button" class="btn btn-outline-primary active" data-year-mode="stacked">{{ __('Bertindan') }}</button>
+                            <button type="button" class="btn btn-outline-primary" data-year-mode="line">{{ __('Garis') }}</button>
                         </div>
                     </div>
-                    <p class="small text-muted">Klik nama negeri pada legenda untuk menyembunyikan atau menunjukkannya.</p>
-                    <div class="chart-box tall"><canvas id="chartYears" aria-label="Carta fatwa mengikut tahun" role="img"></canvas></div>
+                    <p class="small text-muted">{{ __('Klik nama negeri pada legenda untuk menyembunyikan atau menunjukkannya.') }}</p>
+                    <div class="chart-box tall"><canvas id="chartYears" aria-label="{{ __('Carta fatwa mengikut tahun') }}" role="img"></canvas></div>
                 </div>
             </div>
             <div class="col-12">
                 <div class="surface overflow-hidden reveal">
                     <table class="table mb-0 align-middle">
                         <thead>
-                            <tr><th>Negeri</th><th class="text-end">Fatwa</th><th class="text-end">Teks penuh</th><th class="text-end">Diwartakan</th><th></th></tr>
+                            <tr><th>{{ __('Negeri') }}</th><th class="text-end">{{ __('Fatwa') }}</th><th class="text-end">{{ __('Teks penuh') }}</th><th class="text-end">{{ __('Diwartakan') }}</th><th></th></tr>
                         </thead>
                         <tbody>
                             @foreach($perState as $row)
@@ -71,7 +71,7 @@
                                     <td class="text-end fw-bold">{{ $row['total'] }}</td>
                                     <td class="text-end">{{ $row['with_text'] }} <span class="text-muted small">({{ round($row['with_text'] / max(1, $row['total']) * 100) }}%)</span></td>
                                     <td class="text-end">{{ $row['gazetted'] }}</td>
-                                    <td class="text-end"><a href="{{ route('fatwas.index', ['state' => $row['state']]) }}" class="small">Lihat <i class="bi bi-arrow-right"></i></a></td>
+                                    <td class="text-end"><a href="{{ route('fatwas.index', ['state' => $row['state']]) }}" class="small">{{ __('Lihat') }} <i class="bi bi-arrow-right"></i></a></td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -112,8 +112,8 @@
                     data: {
                         labels: perState.map((s) => s.state),
                         datasets: [
-                            { label: 'Teks penuh', data: perState.map((s) => s.with_text), backgroundColor: perState.map((s) => s.colour), borderRadius: 6, stack: 's' },
-                            { label: 'Tajuk sahaja', data: perState.map((s) => s.total - s.with_text), backgroundColor: perState.map((s) => fade(s.colour, .3)), borderRadius: 6, stack: 's' },
+                            { label: @json(__('Teks penuh')), data: perState.map((s) => s.with_text), backgroundColor: perState.map((s) => s.colour), borderRadius: 6, stack: 's' },
+                            { label: @json(__('Tajuk sahaja')), data: perState.map((s) => s.total - s.with_text), backgroundColor: perState.map((s) => fade(s.colour, .3)), borderRadius: 6, stack: 's' },
                         ],
                     },
                     options: {
