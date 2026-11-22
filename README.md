@@ -15,6 +15,7 @@ Fatwas in Malaysia are published separately by each state and federal religious 
 | **Home** | Hero search with live suggestions, animated statistics, fatwa coverage per state, today's prayer times, categories and the latest fatwas (`/`). |
 | **Explore & Search Fatwa** | Browse fatwas with full-text search over title and fatwa text, filterable by state, year and category (`/fatwas`). Each fatwa page shows the extracted text, the official PDF and related fatwas. |
 | **Compare States** | Pick an issue or category and see each state's fatwas side by side (`/bandingkan`). |
+| **Keputusan (decision)** | Each fatwa page shows the decision passage at the top, picked out of the full text by wording rules (`app/Support/FatwaDecision.php`). Found for about 9 in 10 fatwas with text; when none is found the box is simply left out. |
 | **Statistics** | Chart.js charts of fatwas per state (with text coverage), per year and per category, plus a summary table (`/statistik`). |
 | **Religious Authorities** | Profiles of federal and state religious bodies with address, contact info, fatwas per year and their latest fatwas (`/authorities`). |
 | **Certified Preachers** | Directory of certified preachers linked to their authority (`/preachers`). |
@@ -26,8 +27,9 @@ Fatwas in Malaysia are published separately by each state and federal religious 
 | **Email alerts** | Opt-in weekly email of new fatwas in the categories and states a user follows, with a one-click signed unsubscribe link (`php artisan fatwa:send-alerts`). |
 | **Malay / English** | "EN | BM" switch in the navbar; Malay is the default. Remembered per visitor and per account. |
 | **Feedback** | Users submit feedback (name, email, phone, message) (`/feedbacks`). |
-| **Admin login** | Admins log in at `/login` to create, edit and delete fatwas, preachers, mosques and kuliah. Admins only come from the seeder; sign-ups are ordinary users. |
-| **Fatwa importer** | `php artisan fatwa:scrape` imports fatwas from twelve sources: Wilayah Persekutuan, Selangor, Negeri Sembilan, Perak, Kedah, Perlis, Pulau Pinang, Melaka, Kelantan, Johor, Sabah and Sarawak, including their full text where it is published. |
+| **Admin login** | Admins log in at `/login` to create, edit and delete fatwas, preachers, mosques and kuliah. The first admin comes from the seeder; sign-ups are ordinary users until an admin promotes them. |
+| **Admin area** | `/admin` (admins only): overview, data-quality queue with quick fixes, category merge/rename and keyword rules, imports run from the browser with a run history, feedback inbox, users (admin rights, disable accounts) and agency details (name, logo, address, website). |
+| **Fatwa importer** | `php artisan fatwa:scrape` imports fatwas from twelve sources: Wilayah Persekutuan, Selangor, Negeri Sembilan, Perak, Kedah, Perlis, Pulau Pinang, Melaka, Kelantan, Johor, Sabah and Sarawak, including their full text where it is published. Scanned PDFs and image-only posts are read with OCR (Tesseract). |
 | **Import API** | `POST /api/fatwas/store` accepts JSON fatwas from external tools (needs an admin API token). |
 
 ### Interface
@@ -49,7 +51,7 @@ Fatwas in Malaysia are published separately by each state and federal religious 
 - **Prayer times:** JAKIM e-Solat API, cached per zone per day (`app/Services/PrayerTimes.php`, zones in `config/prayer_zones.php`)
 - **Database:** MySQL (developed against a database named `eFatwa_db`)
 - **Search:** MySQL FULLTEXT index on fatwa title + text
-- **Importer:** Laravel Artisan command with one adapter per website (`app/Scrapers`); PDF text via Poppler's `pdftotext`
+- **Importer:** Laravel Artisan command with one adapter per website (`app/Scrapers`); PDF text via Poppler's `pdftotext`, scanned pages via Tesseract OCR (Malay + English)
 - **HTTPS:** outgoing requests verify certificates with `composer/ca-bundle` plus extra intermediates in `resources/certs/` (`app/Support/CaBundle.php`), so no `php.ini` CA setup is needed
 
 ## Data model
@@ -72,7 +74,7 @@ Feedback   (name, email, phone_number, content)
 
 ## Getting started
 
-Requirements: PHP 8.2+ (with curl, fileinfo, intl, mbstring, openssl, pdo_mysql), Composer, MySQL 8. Importing fatwa text also needs Poppler's `pdftotext` (`scoop install poppler` on Windows).
+Requirements: PHP 8.2+ (with curl, fileinfo, intl, mbstring, openssl, pdo_mysql), Composer, MySQL 8. Importing fatwa text also needs Poppler (`scoop install poppler` on Windows), and reading scanned fatwas needs Tesseract (`scoop install tesseract`, then put `msa.traineddata` and `eng.traineddata` from https://github.com/tesseract-ocr/tessdata into its `tessdata` folder). Set `OCR_ENABLED=false` to import without OCR.
 
 ```bash
 git clone https://github.com/abdqayyum03/e-fatwa.git
@@ -112,7 +114,23 @@ The app runs on Malaysian time (`APP_TIMEZONE=Asia/Kuala_Lumpur`), which kuliah 
 
 ### Admin access
 
-Visitors can browse and search everything without logging in. Creating, editing and deleting fatwas, preachers, mosques and kuliah needs an admin login: click **Admin** in the navigation bar (or go to `/login`). There is no public registration; admin accounts come from the `ADMIN_*` values in `.env` (re-run `php artisan db:seed --class=AdminUserSeeder` after changing them).
+Visitors can browse and search everything without logging in. Creating, editing and deleting fatwas, preachers, mosques and kuliah needs an admin login (`/login`). The first admin account comes from the `ADMIN_*` values in `.env` (re-run `php artisan db:seed --class=AdminUserSeeder` after changing them); after that, admins can give or remove admin rights at `/admin/pengguna`.
+
+### Admin area (`/admin`)
+
+Open it from the account menu (**Kawasan admin**). Pages:
+
+| Page | What it does |
+|---|---|
+| Overview | Totals, the latest import per state, items needing attention, new fatwas, unread feedback and new users. |
+| Kualiti data (`/admin/kualiti`) | Fatwas with no text, no category, no date, no decision found, garbled OCR text, or a possible duplicate in the same state. Fix title / category / date inline, delete a duplicate, or mark an item as checked to hide it. |
+| Kategori (`/admin/kategori`) | Rename, merge or delete categories. Keyword rules categorise uncategorised fatwas by title: **Pratonton** shows what would change, **Guna peraturan** saves it. Starter rules come from `CategoryRuleSeeder`. |
+| Import (`/admin/import`) | Run one state's import and see every run (from the browser, the terminal or the weekly schedule). Browser runs go through the queue, so a worker must be running: `php artisan queue:work --timeout=3600` (or `composer dev`). |
+| Maklum balas (`/admin/maklum-balas`) | Feedback inbox: read, mark as done, delete. |
+| Pengguna (`/admin/pengguna`) | Accounts, alert settings, give/remove admin rights, disable/enable accounts. Disabled users can't log in and are signed out. You can't change your own account, and the last active admin can't be removed. |
+| Agensi (`/admin/agensi`) | Edit each mufti department's name, logo, address, phone and website. The state can't be changed (the importers use it). |
+
+The "Keputusan" box text is stored in `fatwas.decision`. It is refreshed whenever a fatwa's text changes; after changing `app/Support/FatwaDecision.php`, run `php artisan fatwa:decisions` to recompute all of them.
 
 ## Importing fatwas
 
@@ -145,6 +163,7 @@ Notes:
 
 - The importer waits about a second between requests so it doesn't overload the government sites, and identifies itself honestly as `e-fatwa-scraper/1.0`. A first full run takes about an hour (Johor alone is ~30 minutes); later runs skip PDFs already read.
 - PDF text is extracted with `pdftotext`. Set `PDFTOTEXT_PATH` in `.env` if it isn't on your PATH.
+- Scanned PDFs (no text layer) are turned into page images with `pdftoppm` and read with Tesseract (`msa+eng`, first 20 pages). Selangor's older posts show the gazette only as images; those are downloaded and read the same way. OCR'd fatwas are marked (`text_from_ocr`) and their page says the text may contain recognition errors. Re-run `php artisan fatwa:scrape` to OCR fatwas that still have no text.
 - Some sites send an incomplete TLS certificate chain. The missing intermediate certificates are kept in `resources/certs/`.
 - Dates: when a site only gives an upload date, the importer reads the gazette or meeting date from the fatwa text instead. Selangor's image-only posts were all re-uploaded on one day in 2023, so their date is left unknown unless the title contains a year.
 - Categories with different names on different sites are merged (e.g. Ibadah → Ibadat, Muamalat/Ekonomi → Muamalat).

@@ -22,7 +22,7 @@ class JohorSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Johor', 'state' => 'Johor'];
+        return ['authority_name' => 'Jabatan Mufti Johor', 'state' => 'Johor'];
     }
 
     public function fetch(): iterable

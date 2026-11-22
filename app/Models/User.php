@@ -26,7 +26,8 @@ class User extends Authenticatable
         'alert_categories',
         'alert_states',
         'locale',
-        // is_admin is deliberately NOT here: no form can make a user an admin.
+        // is_admin and disabled_at are deliberately NOT here: only the admin Users page
+        // changes them, explicitly, through forceFill().
     ];
 
     /**
@@ -54,6 +55,7 @@ class User extends Authenticatable
             'alert_categories' => 'array',
             'alert_states' => 'array',
             'last_alert_sent_at' => 'datetime',
+            'disabled_at' => 'datetime',
         ];
     }
 
@@ -61,6 +63,11 @@ class User extends Authenticatable
     public function bookmarks()
     {
         return $this->belongsToMany(Fatwa::class, 'bookmarks')->withTimestamps();
+    }
+
+    public function isDisabled(): bool
+    {
+        return $this->disabled_at !== null;
     }
 
     public function hasBookmarked(Fatwa $fatwa): bool

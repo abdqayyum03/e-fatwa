@@ -21,7 +21,7 @@ class PerlisSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Perlis', 'state' => 'Perlis'];
+        return ['authority_name' => 'Jabatan Mufti Negeri Perlis', 'state' => 'Perlis'];
     }
 
     public function fetch(): iterable

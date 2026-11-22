@@ -27,6 +27,14 @@ class LoginController extends Controller
             ]);
         }
 
+        if ($request->user()->isDisabled()) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => __('Akaun ini telah dinyahaktifkan. Hubungi pentadbir.'),
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));

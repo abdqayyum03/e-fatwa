@@ -48,6 +48,33 @@ Tech stack stays the same (Laravel 12, MySQL, Blade + Bootstrap 5.3, Leaflet). N
 - [x] **Malay/English interface:** move all interface text into translation files and add a language switch.
 - [x] **AI question helper:** the site searches the fatwa database first, then Claude summarises only the fatwas found, with links to each one. Always shows a disclaimer that it is a summary, not a ruling. API key stays in `.env`. *(Done: answers are returned directly, not queued; rate-limited per user, and cached for a day per question.)*
 
+## Phase 5: Admin area and data quality
+
+**Goal:** give admins one place to run the site and clean up the data, so what visitors see gets better. Hand-built Blade pages in the site's own theme under `/admin` (admins only); no admin-panel package.
+
+Done after Phase 4 (not admin pages): OCR for scanned fatwas (Tesseract), the "Keputusan" decision box on fatwa pages, Sabah and Sarawak importers, and official agency names.
+
+- [x] **Overview:** totals, the latest import per state and its result, fatwas added this week, unread feedback and new users.
+- [x] **Data quality queue:** lists fatwas with no text, no category, no date or no decision found, OCR text that looks garbled, and possible duplicates within a state. Each item has a quick fix (set category, date or title) or "mark as checked".
+- [x] **Category management:** rename and merge categories (e.g. "Sosial & Kemasyarakatan" into "Sosial/Syariah"), plus keyword rules that categorise the ~720 uncategorised fatwas automatically. Fatwas no rule matches stay uncategorised.
+- [x] **Imports:** run the importer for one state from the browser, with a stored history of each run (new, updated, failed, time taken) instead of log files.
+- [x] **Feedback inbox:** read, mark as handled and delete feedback (it is saved today but no page shows it).
+- [x] **Users:** list accounts and their alert settings, give or remove admin rights, disable accounts.
+- [x] **Agencies:** edit names, logos, addresses and websites in a form instead of the seeder. *(Done; the seeder also fills in each agency's official website.)*
+
+## Later ideas
+
+Not planned yet; picked up when there is time or budget.
+
+- **Same issue in other states:** each fatwa page lists the closest fatwas from other states (MySQL full-text similarity).
+- **Malaysia map:** clickable map on the home page, coloured by fatwas per state (Leaflet).
+- **Automated tests:** feature tests for routes, admin permissions, search, bookmarks and the decision/date parsers.
+- **Malay validation messages:** `lang/ms/validation.php`, so form errors aren't in English in Malay mode.
+- **Pahang:** retry when its portal is back from maintenance.
+- **Tanya AI:** switch on with an `ANTHROPIC_API_KEY` (code is ready).
+- **AI summaries:** a short plain-language summary per fatwa, generated once and stored (Batch API keeps it to a few dollars).
+- **Publishing:** hosting, real email and the scheduler on a server, if the project goes public.
+
 ---
 
 ## Extra packages and services by phase
@@ -61,6 +88,8 @@ Tech stack stays the same (Laravel 12, MySQL, Blade + Bootstrap 5.3, Leaflet). N
 | 3 | JAKIM e-Solat API | Prayer times |
 | 3–4 | Alpine.js (CDN) or Livewire *(optional)* | Small interactive parts such as live search and bookmark buttons |
 | 4 | Claude API via the official Anthropic PHP SDK (`anthropic-ai/sdk`) | AI question helper |
+| 4+ | Tesseract OCR (Malay + English data) | Text from scanned fatwas |
+| 5 | None planned | Admin pages are plain Laravel + Blade |
 
 ## Hosting notes
 

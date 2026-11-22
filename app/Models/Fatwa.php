@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\FatwaDecision;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,12 +23,26 @@ class Fatwa extends Model
         'issued_year',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'text_from_ocr' => 'boolean',
+            'quality_checked_at' => 'datetime',
+        ];
+    }
+
     protected static function booted(): void
     {
-        // Keep issued_year in sync with the free-text date ("2024", "10 Mac 2025", "2024-01-01").
         static::saving(function (Fatwa $fatwa) {
+            // Keep issued_year in sync with the free-text date ("2024", "10 Mac 2025", "2024-01-01").
             if ($fatwa->isDirty('date_issued') || $fatwa->issued_year === null) {
                 $fatwa->issued_year = self::yearFrom($fatwa->date_issued);
+            }
+
+            // The decision box is picked out of the text; refresh it whenever the text changes.
+            // (After changing FatwaDecision itself, run `php artisan fatwa:decisions`.)
+            if ($fatwa->isDirty('full_text')) {
+                $fatwa->decision = FatwaDecision::extract($fatwa->full_text);
             }
         });
     }

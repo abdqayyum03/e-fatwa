@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Admin;
 use App\Http\Controllers\AlertUnsubscribeController;
 use App\Http\Controllers\AskController;
 use App\Http\Controllers\Auth\LoginController;
@@ -88,6 +89,42 @@ Route::middleware(['auth', 'can:admin'])->group(function () {
     Route::resource('mosques', MosqueController::class)->except(['index', 'show']);
     Route::resource('kuliah', LectureController::class)->except(['index', 'show'])
         ->names('lectures')->parameters(['kuliah' => 'lecture']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin area (/admin)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', Admin\DashboardController::class)->name('dashboard');
+
+    Route::get('/kualiti', [Admin\QualityController::class, 'index'])->name('quality.index');
+    Route::patch('/kualiti/{fatwa}', [Admin\QualityController::class, 'update'])->name('quality.update');
+
+    Route::get('/kategori', [Admin\CategoryController::class, 'index'])->name('categories.index');
+    Route::patch('/kategori/{category}', [Admin\CategoryController::class, 'update'])->name('categories.update');
+    Route::post('/kategori/{category}/gabung', [Admin\CategoryController::class, 'merge'])->name('categories.merge');
+    Route::delete('/kategori/{category}', [Admin\CategoryController::class, 'destroy'])->name('categories.destroy');
+    Route::post('/peraturan-kategori', [Admin\CategoryController::class, 'storeRule'])->name('rules.store');
+    Route::patch('/peraturan-kategori/{rule}', [Admin\CategoryController::class, 'updateRule'])->name('rules.update');
+    Route::delete('/peraturan-kategori/{rule}', [Admin\CategoryController::class, 'destroyRule'])->name('rules.destroy');
+    Route::post('/peraturan-kategori/guna', [Admin\CategoryController::class, 'applyRules'])->name('rules.apply');
+
+    Route::get('/import', [Admin\ImportController::class, 'index'])->name('imports.index');
+    Route::post('/import/{source}', [Admin\ImportController::class, 'store'])->name('imports.store');
+
+    Route::get('/maklum-balas', [Admin\FeedbackController::class, 'index'])->name('feedback.index');
+    Route::patch('/maklum-balas/{feedback}', [Admin\FeedbackController::class, 'update'])->name('feedback.update');
+    Route::delete('/maklum-balas/{feedback}', [Admin\FeedbackController::class, 'destroy'])->name('feedback.destroy');
+
+    Route::get('/pengguna', [Admin\UserController::class, 'index'])->name('users.index');
+    Route::patch('/pengguna/{user}', [Admin\UserController::class, 'update'])->name('users.update');
+
+    Route::get('/agensi', [Admin\AuthorityController::class, 'index'])->name('authorities.index');
+    Route::get('/agensi/{authority}/edit', [Admin\AuthorityController::class, 'edit'])->name('authorities.edit');
+    Route::put('/agensi/{authority}', [Admin\AuthorityController::class, 'update'])->name('authorities.update');
 });
 
 /*

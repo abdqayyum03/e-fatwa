@@ -20,7 +20,7 @@ class SelangorSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Selangor', 'state' => 'Selangor'];
+        return ['authority_name' => 'Jabatan Mufti Negeri Selangor', 'state' => 'Selangor'];
     }
 
     public function fetch(): iterable
@@ -48,6 +48,8 @@ class SelangorSource implements FatwaSource
                     'title' => $title,
                     'source_url' => $post['link'],
                     'pdf_url' => $pdf,
+                    // Older posts show the gazette only as page images: OCR reads those.
+                    'image_urls' => $pdf ? [] : $this->imagesFrom($content),
                     // PDF posts: the post date, replaced by the gazette date from the PDF text.
                     // Image-only posts were all re-uploaded on one day in 2023, so their post
                     // date means nothing: use a year from the title if there is one, else unknown.
@@ -73,6 +75,22 @@ class SelangorSource implements FatwaSource
         [$y, $m, $d] = array_map('intval', explode('-', $ymd));
 
         return "{$d} {$months[$m - 1]} {$y}";
+    }
+
+    /**
+     * Full-size uploads of the post's images, in page order. WordPress shows a
+     * resized copy ("...-1-724x1024.png"); dropping the size suffix gives the original.
+     *
+     * @return list<string>
+     */
+    private function imagesFrom(string $html): array
+    {
+        preg_match_all('/<img[^>]+src="([^"]+\/wp-content\/uploads\/[^"]+\.(?:png|jpe?g))"/i', $html, $m);
+
+        return array_values(array_unique(array_map(
+            fn ($src) => preg_replace('/-\d+x\d+(\.\w+)$/', '$1', html_entity_decode($src)),
+            $m[1],
+        )));
     }
 
     private function pdfFrom(string $html): ?string

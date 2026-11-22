@@ -20,7 +20,7 @@ class PerakSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Perak', 'state' => 'Perak'];
+        return ['authority_name' => 'Jabatan Mufti Negeri Perak', 'state' => 'Perak'];
     }
 
     public function fetch(): iterable

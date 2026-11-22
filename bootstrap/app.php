@@ -13,7 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         // Malay / English interface (see App\Http\Middleware\SetLocale).
-        $middleware->web(append: [\App\Http\Middleware\SetLocale::class]);
+        $middleware->web(append: [
+            \App\Http\Middleware\SetLocale::class,
+            // Accounts disabled from /admin/pengguna are signed out on their next request.
+            \App\Http\Middleware\EnsureAccountActive::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

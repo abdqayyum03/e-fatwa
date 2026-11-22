@@ -38,11 +38,29 @@
                     </div>
                 @endif
 
+                @if($fatwa->decision)
+                    <section class="fatwa-decision mb-4" aria-labelledby="decision-heading">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-check2-circle"></i>
+                            <h2 id="decision-heading" class="h6 fw-bold text-uppercase mb-0">{{ __('Keputusan') }}</h2>
+                        </div>
+                        <div class="fatwa-decision-text">{{ $fatwa->decision }}</div>
+                        <p class="small text-muted mt-2 mb-0">{{ __('Dipetik secara automatik daripada teks fatwa. Baca teks penuh di bawah atau dokumen rasmi untuk konteks lengkap.') }}</p>
+                    </section>
+                @endif
+
                 @if($fatwa->full_text)
+                    @if($fatwa->decision)
+                        <h2 class="h6 fw-bold text-uppercase text-muted mb-2">{{ __('Teks penuh') }}</h2>
+                    @endif
                     <article class="fatwa-doc" data-reading>{{ $fatwa->full_text }}</article>
                     <p class="small text-muted mt-3 mb-0">
                         <i class="bi bi-info-circle"></i>
-                        {{ __('Teks diekstrak secara automatik daripada PDF rasmi dan mungkin mengandungi kesilapan format. Rujuk PDF rasmi untuk kandungan yang sah.') }}
+                        @if($fatwa->text_from_ocr)
+                            {{ __('Teks ini dibaca daripada dokumen imbasan menggunakan OCR dan mungkin mengandungi kesilapan ejaan. Rujuk dokumen rasmi untuk kandungan yang sah.') }}
+                        @else
+                            {{ __('Teks diekstrak secara automatik daripada PDF rasmi dan mungkin mengandungi kesilapan format. Rujuk PDF rasmi untuk kandungan yang sah.') }}
+                        @endif
                     </p>
                 @else
                     <div class="empty">

@@ -31,8 +31,9 @@ class FatwaImporter
     /** @return array{created:int, updated:int, with_text:int, failed:int} */
     public function import(FatwaSource $source, ?int $limit = null): array
     {
+        // One agency per state; matched by state so renaming an agency never splits its fatwas.
         $authority = Authority::firstOrCreate(
-            ['authority_name' => $source->authority()['authority_name']],
+            ['state' => $source->authority()['state']],
             $source->authority(),
         );
 
@@ -51,21 +52,36 @@ class FatwaImporter
                 $fatwa->fill([
                     'title' => $record['title'],
                     'pdf_url' => $record['pdf_url'] ?? null,
-                    'date_issued' => $record['date_issued'] ?? null,
                     'gazette_no' => $record['gazette_no'] ?? null,
                     'status' => $record['status'] ?? null,
                     'issuing_agency' => $authority->id,
-                    'category_id' => $this->categoryId($record['category'] ?? null),
                 ]);
+
+                // Sites without categories or dates mustn't blank what is already set: categories
+                // come from the admin keyword rules or by hand, dates from the text or by hand.
+                if ($categoryId = $this->categoryId($record['category'] ?? null)) {
+                    $fatwa->category_id = $categoryId;
+                }
+
+                if (! empty($record['date_issued'])) {
+                    $fatwa->date_issued = $record['date_issued'];
+                }
 
                 if (! empty($record['full_text'])) {
                     // Sites that publish the fatwa as web text give it to us directly.
                     $fatwa->full_text = $record['full_text'];
-                } elseif ($this->withText && ($this->refreshText || $fatwa->full_text === null)
-                    && ($download = $record['download_url'] ?? $fatwa->pdf_url)) {
-                    // download_url: a link that only works for a short time (e.g. Penang's
-                    // tokened links), used to read the PDF but never stored.
-                    $fatwa->full_text = $this->pdfText($download);
+                    $fatwa->text_from_ocr = false;
+                } elseif ($this->withText && ($this->refreshText || $fatwa->full_text === null)) {
+                    if ($download = $record['download_url'] ?? $fatwa->pdf_url) {
+                        // download_url: a link that only works for a short time (e.g. Penang's
+                        // tokened links), used to read the PDF but never stored.
+                        $fatwa->full_text = $this->pdfText($download);
+                        $fatwa->text_from_ocr = $fatwa->full_text !== null && $this->lastWasOcr;
+                    } elseif (! empty($record['image_urls']) && Ocr::enabled()) {
+                        // Posts that show the fatwa only as scanned page images (Selangor).
+                        $fatwa->full_text = (new Ocr)->images($record['image_urls']);
+                        $fatwa->text_from_ocr = $fatwa->full_text !== null;
+                    }
                 }
 
                 // Derived from the stored text on every run, so a re-run without
@@ -114,10 +130,17 @@ class FatwaImporter
     /** Skip PDFs bigger than this (some are huge scanned books with no text anyway). */
     private const MAX_PDF_BYTES = 40 * 1024 * 1024;
 
-    /** Download a PDF and convert it to text with poppler's pdftotext. */
+    /** Whether the last pdfText() result came from OCR rather than the PDF's own text. */
+    private bool $lastWasOcr = false;
+
+    /**
+     * Download a PDF and convert it to text with poppler's pdftotext. Scanned PDFs
+     * (no text layer) are read with OCR instead, when it is enabled.
+     */
     public function pdfText(string $url): ?string
     {
         usleep(1_000_000); // polite delay
+        $this->lastWasOcr = false;
 
         $pdf = tempnam(sys_get_temp_dir(), 'fatwa');
 
@@ -141,20 +164,31 @@ class FatwaImporter
             }
 
             $result = Process::timeout(180)->run([config('services.pdftotext.path'), '-enc', 'UTF-8', '-layout', $pdf, '-']);
+
+            if (! $result->successful()) {
+                throw new \RuntimeException('pdftotext failed: '.trim($result->errorOutput()));
+            }
+
+            // Collapse layout whitespace but keep paragraph breaks.
+            $text = preg_replace(["/[ \t]+/u", "/\n{3,}/u"], [' ', "\n\n"], $result->output());
+            $text = trim($text);
+
+            // Scanned PDFs produce no (or almost no) real text: read the page images instead.
+            if (mb_strlen(preg_replace('/\s+/u', '', $text)) > 50) {
+                return $text;
+            }
+
+            if (! Ocr::enabled()) {
+                return null;
+            }
+
+            $text = (new Ocr)->pdf($pdf);
+            $this->lastWasOcr = $text !== null;
+
+            return $text;
         } finally {
             @unlink($pdf);
         }
-
-        if (! $result->successful()) {
-            throw new \RuntimeException('pdftotext failed: '.trim($result->errorOutput()));
-        }
-
-        // Collapse layout whitespace but keep paragraph breaks.
-        $text = preg_replace(["/[ \t]+/u", "/\n{3,}/u"], [' ', "\n\n"], $result->output());
-        $text = trim($text);
-
-        // Scanned PDFs produce no (or almost no) real text.
-        return mb_strlen(preg_replace('/\s+/u', '', $text)) > 50 ? $text : null;
     }
 
     /**

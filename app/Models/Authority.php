@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Authority extends Model
 {
-    protected $fillable = ['authority_name', 'logo', 'contact_info', 'street', 'city', 'poscode', 'state'];
+    protected $fillable = ['authority_name', 'logo', 'contact_info', 'street', 'city', 'poscode', 'state', 'website'];
 
     public function fatwas()
     {

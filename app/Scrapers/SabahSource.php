@@ -24,7 +24,7 @@ class SabahSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Sabah', 'state' => 'Sabah'];
+        return ['authority_name' => 'Pejabat Mufti Negeri Sabah', 'state' => 'Sabah'];
     }
 
     public function fetch(): iterable

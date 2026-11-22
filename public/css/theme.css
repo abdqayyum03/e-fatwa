@@ -308,6 +308,10 @@ a { text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .reading-progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: linear-gradient(90deg, var(--ef-gold), #e9c76a); z-index: 1100; transition: width .1s linear; }
 .fatwa-doc { font-size: var(--doc-size, 1rem); line-height: 1.8; white-space: pre-line; background: var(--ef-surface); border: 1px solid var(--ef-border); border-radius: var(--ef-radius); padding: 1.6rem 1.8rem; max-height: none; }
 .fatwa-doc.font-serif { font-family: var(--ef-display); }
+/* "Keputusan": the decision picked out of the fatwa text */
+.fatwa-decision { background: var(--ef-primary-soft); border-left: 4px solid var(--ef-primary); border-radius: var(--ef-radius-sm); padding: 1.1rem 1.3rem; }
+.fatwa-decision .bi, .fatwa-decision h2 { color: var(--ef-primary); }
+.fatwa-decision-text { white-space: pre-line; line-height: 1.75; font-size: var(--doc-size, 1rem); }
 .info-list { list-style: none; padding: 0; margin: 0; }
 .info-list li { display: flex; gap: .8rem; padding: .75rem 0; border-bottom: 1px dashed var(--ef-border); }
 .info-list li:last-child { border-bottom: 0; }
@@ -394,3 +398,47 @@ a { text-decoration-thickness: 1px; text-underline-offset: 3px; }
 /* Tables (admin-ish lists) */
 .table { --bs-table-bg: transparent; --bs-table-hover-bg: var(--ef-primary-soft); --bs-table-color: var(--ef-ink); }
 .table thead th { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ef-muted); font-weight: 700; border-bottom-width: 1px; background: var(--ef-surface-2); }
+
+/* ===== Admin area ===== */
+.admin-mono { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-family: var(--ef-display); font-size: .8rem; color: #fff; background: hsl(var(--h) 45% 38%); }
+.quality-snippet { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .78rem; background: var(--ef-surface-2); border-radius: var(--ef-radius-sm); padding: .5rem .7rem; overflow-wrap: anywhere; }
+.rule-preview { background: var(--ef-primary-soft); border-radius: var(--ef-radius-sm); padding: 1rem 1.2rem; }
+.rule-preview summary { cursor: pointer; }
+
+/* Data-quality page: issue tiles, toolbar, rows */
+.issue-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; }
+@media (min-width: 576px) { .issue-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1400px) { .issue-grid { grid-template-columns: repeat(6, 1fr); } }
+.issue-tile { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: .55rem; align-items: center; padding: .7rem .8rem; border: 1px solid var(--ef-border); border-radius: var(--ef-radius-sm); color: var(--ef-ink); text-decoration: none; transition: background-color .15s, border-color .15s; }
+.issue-tile:hover { background: var(--ef-primary-soft); border-color: rgba(var(--ef-primary-rgb), .35); color: var(--ef-ink); }
+.issue-tile .bi { grid-row: 1 / 3; font-size: 1.15rem; color: var(--ef-muted); }
+.issue-tile .issue-count { font-family: var(--ef-display); font-size: 1.3rem; font-weight: 700; line-height: 1.1; color: var(--ef-gold); }
+.issue-tile .issue-label { font-size: .76rem; line-height: 1.25; color: var(--ef-muted); }
+.issue-tile.is-clear .issue-count { color: var(--ef-muted); }
+.issue-tile.active { background: var(--ef-primary); border-color: var(--ef-primary); }
+.issue-tile.active .bi, .issue-tile.active .issue-count, .issue-tile.active .issue-label { color: #fff; }
+
+.quality-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; }
+.quality-toolbar > p { flex: 1 1 18rem; }
+
+.quality-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem 1rem; align-items: start; padding: .9rem 1.1rem; border-bottom: 1px solid var(--ef-border); }
+.quality-row:last-child { border-bottom: 0; }
+.quality-row:hover { background: rgba(var(--ef-primary-rgb), .04); }
+.quality-title { font-weight: 600; color: var(--ef-ink); text-decoration: none; overflow-wrap: anywhere; }
+.quality-title:hover { color: var(--ef-primary); text-decoration: underline; }
+.quality-row .meta-row { margin-top: .35rem; }
+.tag-link { text-decoration: none; }
+.tag-link:hover { color: var(--ef-primary); border-color: rgba(var(--ef-primary-rgb), .4); }
+.quality-actions { display: flex; flex-direction: column; align-items: flex-end; gap: .4rem; }
+.quality-actions .quick-fix { width: 16rem; }
+.quality-fix { grid-column: 1 / -1; }
+.quality-fix > form { padding: .75rem .9rem; margin-top: .15rem; background: var(--ef-surface-2); border: 1px solid var(--ef-border); border-radius: var(--ef-radius-sm); }
+@media (max-width: 575.98px) {
+  .quality-row { grid-template-columns: 1fr; }
+  .quality-actions { align-items: stretch; }
+  .quality-actions .quick-fix { width: 100%; }
+}
+.table-light-row > td { background: var(--ef-surface-2); }
+/* Pill navs (account and admin menus, tabs) in the theme colour, not Bootstrap blue. */
+.nav-pills { --bs-nav-pills-link-active-bg: var(--ef-primary); --bs-nav-pills-link-active-color: #fff; --bs-nav-link-color: var(--ef-ink); --bs-nav-link-hover-color: var(--ef-primary); }
+.admin-main .nav-pills .nav-link { padding: .4rem .8rem; font-size: .9rem; }

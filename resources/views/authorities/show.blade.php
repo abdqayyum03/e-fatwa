@@ -39,6 +39,9 @@
                         @if($authority->contact_info)
                             <li><i class="bi bi-telephone"></i><div><small>{{ __('Hubungi') }}</small>{{ $authority->contact_info }}</div></li>
                         @endif
+                        @if($authority->website)
+                            <li><i class="bi bi-globe"></i><div><small>{{ __('Laman web') }}</small><a href="{{ $authority->website }}" target="_blank" rel="noopener">{{ parse_url($authority->website, PHP_URL_HOST) }}</a></div></li>
+                        @endif
                         <li><i class="bi bi-journal-text"></i><div><small>{{ __('Fatwa dalam pangkalan data') }}</small>{{ $authority->fatwas_count }}</div></li>
                     </ul>
                     @if($authority->street)

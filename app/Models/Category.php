@@ -12,4 +12,9 @@ class Category extends Model
     {
         return $this->hasMany(Fatwa::class);
     }
+
+    public function rules()
+    {
+        return $this->hasMany(CategoryRule::class);
+    }
 }

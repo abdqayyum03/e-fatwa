@@ -23,7 +23,7 @@ class MelakaSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Melaka', 'state' => 'Melaka'];
+        return ['authority_name' => 'Jabatan Mufti Negeri Melaka', 'state' => 'Melaka'];
     }
 
     public function fetch(): iterable

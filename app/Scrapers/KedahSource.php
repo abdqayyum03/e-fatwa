@@ -28,7 +28,7 @@ class KedahSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Kedah', 'state' => 'Kedah'];
+        return ['authority_name' => 'Jabatan Mufti Negeri Kedah Darul Aman', 'state' => 'Kedah'];
     }
 
     public function fetch(): iterable

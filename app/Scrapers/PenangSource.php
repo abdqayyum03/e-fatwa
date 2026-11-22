@@ -23,7 +23,7 @@ class PenangSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Pulau Pinang', 'state' => 'Pulau Pinang'];
+        return ['authority_name' => 'Jabatan Mufti Negeri Pulau Pinang', 'state' => 'Pulau Pinang'];
     }
 
     public function fetch(): iterable

@@ -30,7 +30,7 @@ class SarawakSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Sarawak', 'state' => 'Sarawak'];
+        return ['authority_name' => 'Jabatan Mufti Negeri Sarawak', 'state' => 'Sarawak'];
     }
 
     public function fetch(): iterable

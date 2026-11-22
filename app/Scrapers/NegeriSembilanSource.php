@@ -21,7 +21,7 @@ class NegeriSembilanSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Negeri Sembilan', 'state' => 'Negeri Sembilan'];
+        return ['authority_name' => 'Jabatan Mufti Kerajaan Negeri Sembilan', 'state' => 'Negeri Sembilan'];
     }
 
     public function fetch(): iterable

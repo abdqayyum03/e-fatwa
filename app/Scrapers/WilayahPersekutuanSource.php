@@ -20,7 +20,7 @@ class WilayahPersekutuanSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Wilayah Persekutuan', 'state' => 'Wilayah Persekutuan'];
+        return ['authority_name' => 'Jabatan Mufti Wilayah Persekutuan', 'state' => 'Wilayah Persekutuan'];
     }
 
     public function fetch(): iterable

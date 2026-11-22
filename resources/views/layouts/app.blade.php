@@ -57,6 +57,7 @@
                             @can('admin')
                                 <li><hr class="dropdown-divider"></li>
                                 <li><h6 class="dropdown-header">{{ __('Admin') }}</h6></li>
+                                <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>{{ __('Kawasan admin') }}</a></li>
                                 <li><a class="dropdown-item" href="{{ route('fatwas.create') }}"><i class="bi bi-plus-circle me-2"></i>{{ __('Tambah Fatwa') }}</a></li>
                                 <li><a class="dropdown-item" href="{{ route('preachers.create') }}"><i class="bi bi-person-plus me-2"></i>{{ __('Tambah Pendakwah') }}</a></li>
                                 <li><a class="dropdown-item" href="{{ route('mosques.create') }}"><i class="bi bi-building-add me-2"></i>{{ __('Tambah Masjid') }}</a></li>

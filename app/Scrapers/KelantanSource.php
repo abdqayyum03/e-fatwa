@@ -25,7 +25,7 @@ class KelantanSource implements FatwaSource
 
     public function authority(): array
     {
-        return ['authority_name' => 'Mufti Kelantan', 'state' => 'Kelantan'];
+        return ['authority_name' => 'Jabatan Mufti Negeri Kelantan', 'state' => 'Kelantan'];
     }
 
     public function fetch(): iterable

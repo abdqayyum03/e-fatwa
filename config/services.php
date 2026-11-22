@@ -46,4 +46,13 @@ return [
         'path' => env('PDFTOTEXT_PATH', 'pdftotext'),
     ],
 
+    // OCR for scanned fatwas: poppler's pdftoppm turns PDF pages into images and
+    // Tesseract reads them (Malay + English data). Set OCR_ENABLED=false to skip.
+    'ocr' => [
+        'enabled' => (bool) env('OCR_ENABLED', true),
+        'tesseract' => env('TESSERACT_PATH', 'tesseract'),
+        'pdftoppm' => env('PDFTOPPM_PATH', 'pdftoppm'),
+        'languages' => env('OCR_LANGUAGES', 'msa+eng'),
+    ],
+
 ];

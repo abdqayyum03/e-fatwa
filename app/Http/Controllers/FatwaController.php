@@ -128,9 +128,14 @@ class FatwaController extends Controller
         return redirect()->route('fatwas.show', $fatwa)->with('success', __('Fatwa berjaya dikemas kini.'));
     }
 
-    public function destroy(Fatwa $fatwa)
+    public function destroy(Request $request, Fatwa $fatwa)
     {
         $fatwa->delete();
+
+        // From the admin quality queue: stay on the queue.
+        if ($request->boolean('back')) {
+            return back()->with('success', __('Fatwa berjaya dipadam.'));
+        }
 
         return redirect()->route('fatwas.index')->with('success', __('Fatwa berjaya dipadam.'));
     }
