@@ -41,21 +41,26 @@ class SelangorSource implements FatwaSource
 
             foreach ($result['data'] as $post) {
                 $content = $post['content']['rendered'] ?? '';
+                $title = self::clean(strip_tags($post['title']['rendered'] ?? ''));
+                $pdf = $this->pdfFrom($content);
 
                 yield [
-                    'title' => self::clean(strip_tags($post['title']['rendered'] ?? '')),
+                    'title' => $title,
                     'source_url' => $post['link'],
-                    'pdf_url' => $this->pdfFrom($content),
-                    // Post date; replaced by the gazette date from the PDF text when found.
-                    'date_issued' => $this->malayDate(substr($post['date'], 0, 10)),
+                    'pdf_url' => $pdf,
+                    // PDF posts: the post date, replaced by the gazette date from the PDF text.
+                    // Image-only posts were all re-uploaded on one day in 2023, so their post
+                    // date means nothing: use a year from the title if there is one, else unknown.
+                    'date_issued' => $pdf
+                        ? $this->malayDate(substr($post['date'], 0, 10))
+                        : (preg_match('/\b((?:19|20)\d{2})\b/', (string) $title, $m) ? $m[1] : null),
                     'gazette_no' => null,
                     'status' => 'Diwartakan',
                     'category' => null,
                 ];
             }
 
-            $totalPages = (int) ($result['headers']['X-WP-TotalPages'][0] ?? 1);
-            if ($page >= $totalPages) {
+            if ($page >= $result['total_pages']) {
                 return;
             }
         }

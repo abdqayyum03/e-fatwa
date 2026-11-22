@@ -60,20 +60,24 @@ class FatwaImporter
                     'category_id' => $this->categoryId($record['category'] ?? null),
                 ]);
 
-                if ($this->withText && $fatwa->pdf_url && ($this->refreshText || $fatwa->full_text === null)) {
+                if (! empty($record['full_text'])) {
+                    // Sites that publish the fatwa as web text give it to us directly.
+                    $fatwa->full_text = $record['full_text'];
+                } elseif ($this->withText && $fatwa->pdf_url && ($this->refreshText || $fatwa->full_text === null)) {
                     $fatwa->full_text = $this->pdfText($fatwa->pdf_url);
                 }
 
                 // Derived from the stored text on every run, so a re-run without
                 // re-downloading never puts back the less accurate listing values.
                 if ($text = $fatwa->full_text) {
-                    // Selangor gives only the web post date; prefer the gazette date printed in the PDF.
-                    if ($source->key() === 'selangor' && ($date = $this->malayDate($text))) {
+                    // Selangor gives only the web post date, and some sites give none:
+                    // use the gazette date printed in the document instead.
+                    if (($source->key() === 'selangor' || ! $fatwa->date_issued) && ($date = $this->malayDate($text))) {
                         $fatwa->date_issued = $date;
                     }
 
-                    // Gazette number printed on the PDF, e.g. "P.U. (B) 59" or "Sel. P.U. 17".
-                    if (! $fatwa->gazette_no && preg_match('/\b((?:Sel\.|Pk\.)\s*P\.\s?U\.\s*\d+|P\.\s?U\.\s*\([AB]\)\s*\d+)/u', $text, $m)) {
+                    // Gazette number printed on the PDF, e.g. "P.U. (B) 59", "Sel. P.U. 17", "N.S. P.U. 12".
+                    if (! $fatwa->gazette_no && preg_match('/\b((?:Sel\.|Pk\.|N\.\s?S\.)\s*P\.\s?U\.\s*\d+|P\.\s?U\.\s*\([AB]\)\s*\d+)/u', $text, $m)) {
                         $fatwa->gazette_no = preg_replace('/\s+/', ' ', $m[1]);
                     }
                 }
@@ -142,14 +146,27 @@ class FatwaImporter
     {
         $head = mb_substr($text, 0, 600);
 
-        return preg_match('/\b(\d{1,2})\s+('.self::MALAY_MONTHS.')\s+((?:19|20)\d{2})\b/u', $head, $m)
+        // "13 Februari 2026", and the older "8hb Jun 1998" / "26hb. Disember, 2002".
+        return preg_match('/\b(\d{1,2})(?:hb\.?)?\s+('.self::MALAY_MONTHS.'),?\s+((?:19|20)\d{2})\b/u', $head, $m)
             ? "{$m[1]} {$m[2]} {$m[3]}"
             : null;
     }
 
+    /** Different sites name the same topic differently; store one name per topic. */
+    private const CATEGORY_ALIASES = [
+        'Ibadah' => 'Ibadat',
+        'Muamalat/Ekonomi' => 'Muamalat',
+    ];
+
     private function categoryId(?string $name): ?int
     {
-        return $name ? Category::firstOrCreate(['category_name' => $name])->id : null;
+        if (! $name) {
+            return null;
+        }
+
+        $name = self::CATEGORY_ALIASES[$name] ?? $name;
+
+        return Category::firstOrCreate(['category_name' => $name])->id;
     }
 
     private function report(string $line): void

@@ -334,6 +334,26 @@ a { text-decoration-thickness: 1px; text-underline-offset: 3px; }
 @media (max-width: 991.98px) { .map-layout { grid-template-columns: 1fr; height: auto; } .map-layout #map { height: 60vh; } .map-list { max-height: 300px; } }
 .leaflet-popup-content-wrapper { border-radius: 12px; }
 
+/* ---------- Prayer times ---------- */
+.prayer-list { list-style: none; padding: 0; margin: 0; }
+.prayer-list li { display: flex; justify-content: space-between; padding: .45rem .7rem; border-radius: 8px; font-variant-numeric: tabular-nums; transition: background-color .3s; }
+.prayer-list li + li { margin-top: 2px; }
+.prayer-list li.is-next { background: var(--ef-primary); color: #fff; font-weight: 700; }
+[data-bs-theme="dark"] .prayer-list li.is-next { color: #0b1412; }
+.next-prayer { background: var(--ef-gold-soft); border-radius: var(--ef-radius-sm); padding: .8rem 1rem; }
+.next-prayer .countdown { font-family: var(--ef-display); font-size: 2rem; font-weight: 700; color: var(--ef-primary); line-height: 1.1; font-variant-numeric: tabular-nums; }
+
+/* ---------- Charts ---------- */
+.chart-box { position: relative; height: 320px; }
+.chart-box.tall { height: 420px; }
+
+/* ---------- Events (kuliah) ---------- */
+.date-badge { width: 64px; flex-shrink: 0; text-align: center; border-radius: 12px; overflow: hidden; border: 1px solid var(--ef-border); background: var(--ef-surface); }
+.date-badge .m { background: var(--ef-primary); color: #fff; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: .2rem 0; }
+[data-bs-theme="dark"] .date-badge .m { color: #0b1412; }
+.date-badge .d { font-family: var(--ef-display); font-size: 1.6rem; font-weight: 700; line-height: 1.2; padding: .2rem 0; }
+.date-badge .w { font-size: .7rem; color: var(--ef-muted); padding-bottom: .3rem; }
+
 /* ---------- Empty states ---------- */
 .empty { text-align: center; padding: 3.5rem 1rem; color: var(--ef-muted); }
 .empty i { font-size: 2.8rem; color: rgba(var(--ef-primary-rgb), .35); display: block; margin-bottom: .8rem; }

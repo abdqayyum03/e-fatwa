@@ -26,7 +26,7 @@ Tech stack stays the same (Laravel 12, MySQL, Blade + Bootstrap 5.3, Leaflet). N
 **Goal:** more sources, fuller content, better search.
 
 - [x] **Full fatwa text:** the scraper opens each fatwa's page and saves its text, and the PDF link if there is one. Add a `source_url` column.
-- [x] **More sources:** the scraper is now a Laravel command (`php artisan fatwa:scrape`) with one adapter per website: Federal Territory, Perak and Selangor. Each fatwa is linked to its state's authority.
+- [x] **More sources:** the scraper is now a Laravel command (`php artisan fatwa:scrape`) with one adapter per website: Federal Territory, Perak, Selangor and Negeri Sembilan. Each fatwa is linked to its state's authority. *(Pahang pending: its portal was under maintenance in Nov 2026.)*
 - [x] **Better search:** MySQL full-text index on title and content, plus state and year filters (as in the SRS).
 - [x] **State comparison page** *(headline feature):* pick a category or keyword and see each state's fatwas side by side.
 
@@ -34,10 +34,10 @@ Tech stack stays the same (Laravel 12, MySQL, Blade + Bootstrap 5.3, Leaflet). N
 
 **Goal:** make the site lively for a demo.
 
-- [ ] **Statistics dashboard:** Chart.js (via CDN) charts of fatwas by state, category and year, plus the most recent fatwas. *(Partly done: the redesigned home page shows counts, per-state bars, categories and latest fatwas; authority pages show fatwas per year.)*
+- [x] **Statistics dashboard:** Chart.js (via CDN) charts of fatwas by state, category and year at `/statistik`; the home page shows counts, per-state bars, categories and the latest fatwas.
 - [x] **Mosques near me:** use the browser's location to centre the map and list the nearest mosques by distance. *(Done with the UI redesign.)*
-- [ ] **Prayer times:** today's times from JAKIM e-Solat for the user's zone, cached for the day. Shown on the dashboard and mosque pages.
-- [ ] **Kuliah and events:** new `events` table linked to mosques and preachers, an upcoming-events list, and events shown on each mosque's and preacher's page.
+- [x] **Prayer times:** today's times from JAKIM e-Solat for the user's zone, cached for the day. Shown on the dashboard and mosque pages.
+- [x] **Kuliah and events:** `lectures` table linked to mosques and preachers, an upcoming list at `/kuliah` with "add to calendar", shown on preacher pages and in mosque map popups.
 
 ## Phase 4: Users and AI
 

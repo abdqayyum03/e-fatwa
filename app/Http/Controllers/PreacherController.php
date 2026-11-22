@@ -56,7 +56,9 @@ class PreacherController extends Controller
 
     public function show(Preacher $preacher)
     {
-        return view('preachers.show', compact('preacher'));
+        $lectures = $preacher->lectures()->with('mosque')->upcoming()->limit(6)->get();
+
+        return view('preachers.show', compact('preacher', 'lectures'));
     }
 
     public function edit(Preacher $preacher)

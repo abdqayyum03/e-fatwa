@@ -49,6 +49,7 @@
                                 <li><a class="dropdown-item" href="{{ route('fatwas.create') }}"><i class="bi bi-plus-circle me-2"></i>Tambah Fatwa</a></li>
                                 <li><a class="dropdown-item" href="{{ route('preachers.create') }}"><i class="bi bi-person-plus me-2"></i>Tambah Pendakwah</a></li>
                                 <li><a class="dropdown-item" href="{{ route('mosques.create') }}"><i class="bi bi-building-add me-2"></i>Tambah Masjid</a></li>
+                                <li><a class="dropdown-item" href="{{ route('lectures.create') }}"><i class="bi bi-calendar-plus me-2"></i>Tambah Kuliah</a></li>
                                 <li><hr class="dropdown-divider"></li>
                             @endcan
                             <li>
@@ -77,7 +78,8 @@
                     <li class="nav-item"><a class="nav-link @if(request()->routeIs('authorities.*')) active @endif" href="{{ route('authorities.index') }}"><i class="bi bi-bank"></i>Agensi</a></li>
                     <li class="nav-item"><a class="nav-link @if(request()->routeIs('preachers.*')) active @endif" href="{{ route('preachers.index') }}"><i class="bi bi-people"></i>Pendakwah</a></li>
                     <li class="nav-item"><a class="nav-link @if(request()->routeIs('mosques.*')) active @endif" href="{{ route('mosques.map') }}"><i class="bi bi-geo-alt"></i>Masjid</a></li>
-                    <li class="nav-item"><a class="nav-link @if(request()->routeIs('feedbacks.*')) active @endif" href="{{ route('feedbacks.index') }}"><i class="bi bi-chat-heart"></i>Maklum Balas</a></li>
+                    <li class="nav-item"><a class="nav-link @if(request()->routeIs('lectures.*')) active @endif" href="{{ route('lectures.index') }}"><i class="bi bi-calendar-event"></i>Kuliah</a></li>
+                    <li class="nav-item"><a class="nav-link @if(request()->routeIs('statistics')) active @endif" href="{{ route('statistics') }}"><i class="bi bi-bar-chart"></i>Statistik</a></li>
                 </ul>
 
                 @unless(request()->routeIs('dashboard'))
@@ -112,6 +114,7 @@
                         <li><a href="{{ route('fatwas.index') }}">Semua fatwa</a></li>
                         <li><a href="{{ route('fatwas.compare') }}">Bandingkan negeri</a></li>
                         <li><a href="{{ route('authorities.index') }}">Agensi</a></li>
+                        <li><a href="{{ route('statistics') }}">Statistik</a></li>
                     </ul>
                 </div>
                 <div class="col-6 col-lg-2">
@@ -120,6 +123,7 @@
                         <li><a href="{{ route('preachers.index') }}">Pendakwah</a></li>
                         <li><a href="{{ route('mosques.map') }}">Peta masjid</a></li>
                         <li><a href="{{ route('mosques.index') }}">Senarai masjid</a></li>
+                        <li><a href="{{ route('lectures.index') }}">Jadual kuliah</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2">

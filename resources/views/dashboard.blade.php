@@ -122,11 +122,19 @@
                         <div class="empty py-4"><i class="bi bi-database"></i>Belum ada fatwa. Jalankan <code>php artisan fatwa:scrape</code>.</div>
                     @endforelse
                     <p class="small text-muted mb-0 mt-3">
-                        <i class="bi bi-info-circle"></i> Sumber: laman rasmi Jabatan Mufti Wilayah Persekutuan, Perak dan Selangor.
+                        <i class="bi bi-info-circle"></i> Sumber: laman rasmi Jabatan Mufti Wilayah Persekutuan, Selangor, Negeri Sembilan dan Perak.
                     </p>
                 </div>
             </div>
             <div class="col-lg-5">
+                <div class="section-title reveal">
+                    <div>
+                        <div class="eyebrow">Hari ini</div>
+                        <h2>Waktu solat</h2>
+                    </div>
+                </div>
+                <div class="reveal mb-5">@include('partials.prayer-times')</div>
+
                 <div class="section-title reveal">
                     <div>
                         <div class="eyebrow">Topik</div>

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Scrapers\FatwaImporter;
 use App\Scrapers\FatwaSource;
+use App\Scrapers\NegeriSembilanSource;
 use App\Scrapers\PerakSource;
 use App\Scrapers\SelangorSource;
 use App\Scrapers\WilayahPersekutuanSource;
@@ -12,7 +13,7 @@ use Illuminate\Console\Command;
 class ScrapeFatwas extends Command
 {
     protected $signature = 'fatwa:scrape
-                            {source?* : Which sources to scrape (wp, perak, selangor). Default: all}
+                            {source?* : Which sources to scrape (wp, perak, selangor, ns). Default: all}
                             {--limit= : Only import this many fatwas per source (for testing)}
                             {--no-text : Skip downloading PDFs and extracting their text}
                             {--refresh-text : Re-extract text even for fatwas that already have it}';
@@ -22,7 +23,7 @@ class ScrapeFatwas extends Command
     /** @return array<string, FatwaSource> */
     private function sources(): array
     {
-        $sources = [new WilayahPersekutuanSource, new PerakSource, new SelangorSource];
+        $sources = [new WilayahPersekutuanSource, new PerakSource, new SelangorSource, new NegeriSembilanSource];
 
         return collect($sources)->keyBy(fn (FatwaSource $s) => $s->key())->all();
     }

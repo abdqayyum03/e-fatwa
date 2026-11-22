@@ -158,6 +158,71 @@
     $$('[data-bs-toggle="tooltip"]').forEach((el) => new bootstrap.Tooltip(el));
   }
 
+  /* ---------- Prayer times (JAKIM e-Solat via /waktu-solat) ---------- */
+  $$('[data-prayer-widget]').forEach((widget) => {
+    const select = $('[data-prayer-zone]', widget);
+    const list = $('[data-prayer-list]', widget);
+    const next = $('[data-prayer-next]', widget);
+    const countdown = $('[data-prayer-countdown]', widget);
+    const errorEl = $('[data-prayer-error]', widget);
+    let timer = null;
+    let data = null;
+
+    // Prayer times are Malaysian local time, whatever the visitor's own timezone is.
+    const nowInMalaysia = () => new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
+    const at = (hhmm) => { const d = nowInMalaysia(); const [h, m] = hhmm.split(':').map(Number); d.setHours(h, m, 0, 0); return d; };
+    const pad = (n) => String(n).padStart(2, '0');
+
+    const tick = () => {
+      if (!data) return;
+      const now = nowInMalaysia();
+      // Imsak and Syuruk are times, not prayers: skip them when picking "next".
+      const order = Object.keys(data.times).filter((k) => !['imsak', 'syuruk'].includes(k));
+      let nextKey = order.find((k) => at(data.times[k]) > now);
+      let target = nextKey ? at(data.times[nextKey]) : null;
+      if (!nextKey) { nextKey = order[0]; target = at(data.times[nextKey]); target.setDate(target.getDate() + 1); }
+
+      $$('li', list).forEach((li) => li.classList.toggle('is-next', li.dataset.prayer === nextKey));
+      $('[data-prayer-next-name]', widget).textContent = data.labels[nextKey];
+      $('[data-prayer-next-time]', widget).textContent = data.times[nextKey];
+      const s = Math.max(0, Math.floor((target - now) / 1000));
+      countdown.textContent = pad(Math.floor(s / 3600)) + ':' + pad(Math.floor((s % 3600) / 60)) + ':' + pad(s % 60);
+      next.hidden = false;
+    };
+
+    const load = async (zone) => {
+      errorEl.hidden = true;
+      $('[data-prayer-date]', widget).textContent = 'Memuatkan…';
+      try {
+        const res = await fetch(widget.dataset.endpoint + '?zone=' + encodeURIComponent(zone), { headers: { Accept: 'application/json' } });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Ralat');
+        data = json;
+        $$('li', list).forEach((li) => { $('b', li).textContent = data.times[li.dataset.prayer] || '--:--'; });
+        $('[data-prayer-date]', widget).textContent = data.date + (data.hijri ? ' · ' + data.hijri + 'H' : '');
+        clearInterval(timer);
+        tick();
+        timer = setInterval(tick, 1000);
+      } catch (e) {
+        data = null;
+        next.hidden = true;
+        errorEl.textContent = e.message || 'Waktu solat tidak dapat dimuatkan.';
+        errorEl.hidden = false;
+        $('[data-prayer-date]', widget).textContent = '';
+      }
+    };
+
+    let zone = widget.dataset.defaultZone;
+    try { zone = localStorage.getItem('ef-prayer-zone') || zone; } catch (e) { /* storage blocked */ }
+    if (![...select.options].some((o) => o.value === zone)) zone = widget.dataset.defaultZone;
+    select.value = zone;
+    select.addEventListener('change', () => {
+      try { localStorage.setItem('ef-prayer-zone', select.value); } catch (e) { /* storage blocked */ }
+      load(select.value);
+    });
+    load(zone);
+  });
+
   /* ---------- Reading tools on a fatwa page ---------- */
   const docEl = $('.fatwa-doc');
   $$('[data-font]').forEach((btn) => btn.addEventListener('click', () => {

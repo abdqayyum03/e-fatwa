@@ -5,8 +5,11 @@ use App\Http\Controllers\AuthorityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FatwaController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\LectureController;
 use App\Http\Controllers\MosqueController;
+use App\Http\Controllers\PrayerTimeController;
 use App\Http\Controllers\PreacherController;
+use App\Http\Controllers\StatisticsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,6 +24,8 @@ Route::get('/dashboard', fn () => redirect()->route('dashboard'));
 
 Route::get('/search-fatwa', [FatwaController::class, 'search'])->name('fatwas.search');
 Route::get('/bandingkan', [FatwaController::class, 'compare'])->name('fatwas.compare');
+Route::get('/statistik', StatisticsController::class)->name('statistics');
+Route::get('/waktu-solat', PrayerTimeController::class)->middleware('throttle:60,1')->name('prayer-times');
 Route::get('/fatwa-suggest', [FatwaController::class, 'suggest'])->middleware('throttle:60,1')->name('fatwas.suggest');
 Route::get('/search-preacher', [PreacherController::class, 'search'])->name('preachers.search');
 Route::get('/mosques/map', [MosqueController::class, 'map'])->name('mosques.map');
@@ -55,6 +60,8 @@ Route::middleware(['auth', 'can:admin'])->group(function () {
     Route::resource('fatwas', FatwaController::class)->except(['index', 'show']);
     Route::resource('preachers', PreacherController::class)->except(['index', 'show']);
     Route::resource('mosques', MosqueController::class)->except(['index', 'show']);
+    Route::resource('kuliah', LectureController::class)->except(['index', 'show'])
+        ->names('lectures')->parameters(['kuliah' => 'lecture']);
 });
 
 /*
@@ -67,3 +74,6 @@ Route::resource('fatwas', FatwaController::class)->only(['index', 'show']);
 Route::resource('authorities', AuthorityController::class)->only(['index', 'show']);
 Route::resource('preachers', PreacherController::class)->only(['index', 'show']);
 Route::resource('mosques', MosqueController::class)->only(['index']);
+Route::resource('kuliah', LectureController::class)->only(['index', 'show'])
+    ->names('lectures')->parameters(['kuliah' => 'lecture']);
+Route::get('/kuliah/{lecture}/kalendar.ics', [LectureController::class, 'ics'])->name('lectures.ics');

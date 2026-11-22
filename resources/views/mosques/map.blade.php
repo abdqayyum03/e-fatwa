@@ -48,6 +48,17 @@
         </div>
         <div id="map" role="region" aria-label="Peta masjid"></div>
     </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-md-6 col-lg-4">@include('partials.prayer-times')</div>
+        <div class="col-md-6 col-lg-8">
+            <div class="surface p-4 h-100">
+                <h2 class="h5">Kuliah di masjid</h2>
+                <p class="text-muted small">Lihat jadual kuliah dan ceramah yang akan datang di masjid-masjid dalam direktori.</p>
+                <a href="{{ route('lectures.index') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar-event"></i> Jadual kuliah</a>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -73,6 +84,7 @@
                 markers[m.id] = L.marker([m.latitude, m.longitude], { icon }).addTo(map).bindPopup(
                     '<strong>' + esc(m.name) + '</strong><br><span class="text-muted">' + esc(m.location) + '</span>' +
                     (m.contact_info ? '<br><i class="bi bi-telephone"></i> ' + esc(m.contact_info) : '') +
+                    (m.upcoming_lectures ? '<br><a href="{{ route('lectures.index') }}?mosque=' + m.id + '"><i class="bi bi-calendar-event"></i> ' + m.upcoming_lectures + ' kuliah akan datang</a>' : '') +
                     '<br><a href="' + directions + '" target="_blank" rel="noopener">Dapatkan arah →</a>'
                 );
             });

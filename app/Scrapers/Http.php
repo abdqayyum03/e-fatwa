@@ -36,7 +36,11 @@ trait Http
 
         $response = $this->client()->get($url, $query)->throw();
 
-        return ['data' => $response->json(), 'headers' => $response->headers()];
+        // WordPress reports paging in X-WP-TotalPages; some servers send it lowercase.
+        return [
+            'data' => $response->json(),
+            'total_pages' => (int) ($response->header('X-WP-TotalPages') ?: 1),
+        ];
     }
 
     protected static function clean(?string $text): ?string

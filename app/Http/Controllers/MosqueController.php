@@ -41,6 +41,7 @@ class MosqueController extends Controller
     {
         $mosques = Mosque::whereNotNull('latitude')
             ->whereNotNull('longitude')
+            ->withCount(['lectures as upcoming_lectures' => fn ($q) => $q->where('starts_at', '>=', now()->startOfDay())])
             ->orderBy('name')
             ->get(['id', 'name', 'location', 'contact_info', 'latitude', 'longitude']);
 

@@ -16,7 +16,8 @@ interface FatwaSource
 
     /**
      * Yield one array per fatwa with these keys (only title and source_url required):
-     *   title, source_url, pdf_url, date_issued, gazette_no, status, category
+     *   title, source_url, pdf_url, date_issued, gazette_no, status, category,
+     *   full_text (only for sites that publish the fatwa as web text, not PDF)
      *
      * @return iterable<array<string, string|null>>
      */
