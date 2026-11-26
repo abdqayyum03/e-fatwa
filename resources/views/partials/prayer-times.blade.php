@@ -2,7 +2,7 @@
 <div class="surface p-4 prayer-widget" data-prayer-widget data-endpoint="{{ route('prayer-times') }}" data-default-zone="{{ \App\Services\PrayerTimes::DEFAULT_ZONE }}">
     <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
         <div>
-            <div class="small text-muted text-uppercase fw-bold" style="letter-spacing: .08em">{{ __('Waktu Solat Hari Ini') }}</div>
+            <div class="small text-muted fw-medium">{{ __('Waktu Solat Hari Ini') }}</div>
             <div class="small text-muted" data-prayer-date>{{ __('Memuatkan…') }}</div>
         </div>
         <i class="bi bi-moon-stars fs-4 text-gold"></i>

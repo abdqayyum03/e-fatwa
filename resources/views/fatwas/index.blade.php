@@ -21,11 +21,11 @@
     {{-- Filters (dropdowns apply immediately) --}}
     <form method="GET" action="{{ route('fatwas.index') }}" class="surface filter-bar mb-4" data-autosubmit>
         <div class="row g-2 align-items-center">
-            <div class="col-lg-5">
+            <div class="col-lg-4">
                 <div class="position-relative">
                     <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
                     <input type="search" name="search" value="{{ $filters['search'] ?? '' }}" class="form-control ps-5"
-                           placeholder="{{ __('Cari dalam tajuk dan teks fatwa...') }}" aria-label="{{ __('Kata kunci') }}" data-primary-search>
+                           placeholder="{{ __('Cari tajuk atau teks fatwa') }}" aria-label="{{ __('Kata kunci') }}" data-primary-search>
                 </div>
             </div>
             <div class="col-6 col-md-3 col-lg-2">
@@ -44,7 +44,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-8 col-md-4 col-lg-2">
+            <div class="col-8 col-md-4 col-lg-3">
                 <select name="category" class="form-select" aria-label="{{ __('Kategori') }}">
                     <option value="">{{ __('Semua kategori') }}</option>
                     @foreach($categories as $category)
@@ -99,7 +99,7 @@
             <a href="{{ route('fatwas.show', $fatwa) }}" class="fatwa-item">
                 <div class="year">
                     <b>{{ $fatwa->issued_year ?? '–' }}</b>
-                    <small>{{ __('Tahun') }}</small>
+                    <span class="visually-hidden">{{ __('Tahun') }}</span>
                 </div>
                 <div class="flex-grow-1" style="min-width: 0">
                     <div class="title">{{ $fatwa->title }}</div>
@@ -108,13 +108,11 @@
                     @endif
                     <div class="meta-row">
                         <x-state-pill :state="$fatwa->authority->state ?? null" />
-                        @if($fatwa->category)<span class="tag"><i class="bi bi-tag"></i> {{ $fatwa->category->category_name }}</span>@endif
-                        @if($fatwa->status === 'Diwartakan')<span class="tag tag-gold"><i class="bi bi-patch-check"></i> {{ __('Diwartakan') }}</span>@endif
-                        @if($fatwa->gazette_no)<span class="tag">{{ $fatwa->gazette_no }}</span>@endif
-                        @if($fatwa->full_text)
-                            <span class="tag" title="{{ __('Teks penuh tersedia') }}"><i class="bi bi-file-text"></i> {{ __('Teks') }}</span>
-                        @elseif($fatwa->pdf_url)
-                            <span class="tag" title="{{ __('PDF sahaja') }}"><i class="bi bi-file-earmark-pdf"></i> PDF</span>
+                        @if($fatwa->category)<span class="tag">{{ $fatwa->category->category_name }}</span>@endif
+                        @if($fatwa->status === 'Diwartakan')<span class="tag tag-gold">{{ __('Diwartakan') }}</span>@endif
+                        @unless($fatwa->full_text)<span class="tag">{{ $fatwa->pdf_url ? __('PDF sahaja') : __('Tiada teks') }}</span>@endunless
+                        @if($ref = collect([$fatwa->gazette_no, $fatwa->date_issued])->filter()->join(' · '))
+                            <span class="gazette-ref">{{ $ref }}</span>
                         @endif
                     </div>
                 </div>
